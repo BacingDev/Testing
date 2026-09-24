@@ -5,11 +5,19 @@ import { useServerInsertedHTML } from "next/navigation";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 import {
+  Box,
   ChakraProvider,
   createSystem,
   defaultConfig,
   defineConfig,
+  Toaster,
+  ToastCloseTrigger,
+  ToastDescription,
+  ToastIndicator,
+  ToastRoot,
+  ToastTitle,
 } from "@chakra-ui/react";
+import { appToaster } from "@/lib/toast";
 
 const segoeFamily =
   '"Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif';
@@ -79,7 +87,23 @@ function EmotionRegistry({ children }) {
 export default function Providers({ children }) {
   return (
     <EmotionRegistry>
-      <ChakraProvider value={system}>{children}</ChakraProvider>
+      <ChakraProvider value={system}>
+        {children}
+        <Toaster toaster={appToaster}>
+          {(toast) => (
+            <ToastRoot>
+              <ToastIndicator />
+              <ToastCloseTrigger />
+              <Box flex="1" minW="0" pe="4">
+                <ToastTitle>{toast.title}</ToastTitle>
+                {toast.description ? (
+                  <ToastDescription>{toast.description}</ToastDescription>
+                ) : null}
+              </Box>
+            </ToastRoot>
+          )}
+        </Toaster>
+      </ChakraProvider>
     </EmotionRegistry>
   );
 }

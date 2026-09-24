@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# runtime graph store (disimpan lewat API /api/flow)
+/data/flow-store.json
+/data/flow-store.json.tmp

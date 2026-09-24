@@ -1,10 +1,11 @@
 "use client";
 
+import { useUpdateNodeInternals } from "@xyflow/react";
 import { useGraphStore } from "@/stores/graph-store";
 import { ConfirmDeleteDialog } from "@/components/flow/confirm-delete-dialog";
-import { EdgePropertiesDialog } from "@/components/flow/edge-properties-dialog";
-import { NodePropertiesDialog } from "@/components/flow/node-properties-dialog";
-import { PortPropertiesDialog } from "@/components/flow/port-properties-dialog";
+import { EdgePropertiesDialog } from "@/components/flow/edge";
+import { NodePropertiesDialog } from "@/components/flow/node";
+import { PortPropertiesDialog } from "@/components/flow/port";
 
 function nodeLabel(node) {
   return node?.data?.label ?? node?.id ?? "-";
@@ -25,6 +26,10 @@ function endpointLabel(nodes, nodeId, handle) {
   const port = findPort(node, handle);
   const base = nodeLabel(node);
   return port ? `${base} · ${portLabel(port)}` : base;
+}
+
+function isDialogOpen(details) {
+  return typeof details === "boolean" ? details : details?.open;
 }
 
 /**
@@ -67,6 +72,7 @@ function CanvasItemDialogsInner({
   const removeNode = useGraphStore((state) => state.removeNode);
   const removeEdge = useGraphStore((state) => state.removeEdge);
   const removePort = useGraphStore((state) => state.removePort);
+  const updateNodeInternals = useUpdateNodeInternals();
 
   const editNode =
     editing?.kind === "node"
@@ -113,14 +119,23 @@ function CanvasItemDialogsInner({
 
   const handleSavePort = (nodeId, portId, patch) => {
     updatePort(nodeId, portId, patch);
+    requestAnimationFrame(() => {
+      updateNodeInternals([nodeId]);
+      requestAnimationFrame(() => updateNodeInternals([nodeId]));
+    });
     onCloseEditing();
   };
 
   const handleConfirmDelete = () => {
     if (deleting?.kind === "node") removeNode(deleting.id);
     if (deleting?.kind === "edge") removeEdge(deleting.id);
-    if (deleting?.kind === "port")
+    if (deleting?.kind === "port") {
       removePort(deleting.nodeId, deleting.portId);
+      requestAnimationFrame(() => {
+        updateNodeInternals([deleting.nodeId]);
+        requestAnimationFrame(() => updateNodeInternals([deleting.nodeId]));
+      });
+    }
     onCloseDeleting();
   };
 
@@ -156,7 +171,7 @@ function CanvasItemDialogsInner({
         node={editNode}
         open={!!editNode}
         onOpenChange={(details) => {
-          if (!details.open) onCloseEditing();
+          if (isDialogOpen(details) === false) onCloseEditing();
         }}
         onSave={handleSaveNode}
       />
@@ -166,7 +181,7 @@ function CanvasItemDialogsInner({
         port={editPort}
         open={!!editPort}
         onOpenChange={(details) => {
-          if (!details.open) onCloseEditing();
+          if (isDialogOpen(details) === false) onCloseEditing();
         }}
         onSave={handleSavePort}
       />
@@ -186,7 +201,7 @@ function CanvasItemDialogsInner({
         waypointCount={editEdge?.data?.points?.length ?? 0}
         open={!!editEdge}
         onOpenChange={(details) => {
-          if (!details.open) onCloseEditing();
+          if (isDialogOpen(details) === false) onCloseEditing();
         }}
         onSave={handleSaveEdge}
       />
@@ -197,7 +212,7 @@ function CanvasItemDialogsInner({
         name={deleteInfo?.name}
         description={deleteInfo?.description}
         onOpenChange={(details) => {
-          if (!details.open) onCloseDeleting();
+          if (isDialogOpen(details) === false) onCloseDeleting();
         }}
         onConfirm={handleConfirmDelete}
       />

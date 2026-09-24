@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import { Box, Button } from "@chakra-ui/react";
 
-const MENU_WIDTH = 184;
-const MENU_HEIGHT = 104;
+const MENU_WIDTH = 168;
+const MENU_HEIGHT = 82;
 const EDGE_GAP = 8;
 
 /**
@@ -54,13 +54,14 @@ export function CanvasContextMenu({ x, y, items, onClose }) {
         left={`${left}px`}
         top={`${top}px`}
         zIndex={61}
-        minWidth={`${MENU_WIDTH}px`}
+        width={`${MENU_WIDTH}px`}
         bg="bg.panel"
         borderWidth="1px"
         borderColor="border"
-        borderRadius="lg"
-        boxShadow="lg"
-        p={1}
+        borderRadius="md"
+        boxShadow="xl"
+        overflow="hidden"
+        p="3px"
       >
         {items.map((item) => {
           const Icon = item.icon;
@@ -72,12 +73,21 @@ export function CanvasContextMenu({ x, y, items, onClose }) {
               colorPalette={item.colorPalette ?? "gray"}
               size="sm"
               width="full"
+              height="32px"
+              minWidth="0"
               justifyContent="flex-start"
+              gap={1.5}
+              px={2}
+              fontSize="sm"
               fontWeight="medium"
-              onClick={item.onSelect}
+              borderRadius="sm"
+              onClick={() => {
+                onClose();
+                item.onSelect();
+              }}
             >
               {Icon ? (
-                <Icon size={15} style={{ marginRight: "8px" }} />
+                <Icon size={15} style={{ flexShrink: 0 }} />
               ) : null}
               {item.label}
             </Button>

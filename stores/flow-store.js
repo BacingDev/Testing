@@ -46,6 +46,28 @@ export const useFlowStore = create((set) => ({
   focusNodeId: null,
   setFocusNodeId: (focusNodeId) => set({ focusNodeId }),
 
+  /**
+   * Preview port bayangan OUTLET — hanya drag dari BADAN node (overlay).
+   * { nodeId, side, position, aim, frozen, wasInside } | null
+   * Port→port (drag dari port existing) tidak mengisi preview ini.
+   */
+  connectGhost: null,
+  setConnectGhost: (connectGhost) => set({ connectGhost }),
+
+  /**
+   * Preview port bayangan INLET — hanya body→body, ukuran sama outlet,
+   * beda warna. Diupdate mengikuti kursor sampai pointer dilepas.
+   */
+  connectGhostInlet: null,
+  setConnectGhostInlet: (connectGhostInlet) => set({ connectGhostInlet }),
+
+  /**
+   * True bila koneksi saat ini tidak akan bisa di-drop (port terkunci,
+   * tanpa neutral, dll). Dipakai GhostConnectionLine untuk stroke merah.
+   */
+  connectBlocked: false,
+  setConnectBlocked: (connectBlocked) => set({ connectBlocked }),
+
   command: null,
   zoomIn: () => set({ command: nextCommand("zoomIn") }),
   zoomOut: () => set({ command: nextCommand("zoomOut") }),

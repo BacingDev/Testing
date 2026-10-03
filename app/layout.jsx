@@ -5,7 +5,7 @@ export const metadata = {
   title: "Workflow Studio",
   description: "Workflow diagram builder",
 };
-
+// comment
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>

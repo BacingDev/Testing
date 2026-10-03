@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
 import {
   TbDeviceFloppy,
@@ -14,8 +16,10 @@ import { useGraphStore } from "@/stores/graph-store";
 
 export default function Navbar() {
   const zoom = useFlowStore((state) => state.zoom);
+  const pathname = usePathname();
+  const blogActive = pathname?.startsWith("/blog") ?? false;
   const dirty = useGraphStore((state) => state.dirty);
-  const [saveState, setSaveState] = useState("idle"); // idle | saving | saved | error
+  const [saveState, setSaveState] = useState("idle");
 
   const handleSave = async () => {
     if (saveState === "saving") return;
@@ -61,6 +65,21 @@ export default function Navbar() {
               Workflow Studio
             </Text>
           </HStack>
+          <Link href="/blog" style={{ textDecoration: "none", color: "inherit" }}>
+            <HStack
+              gap={1.5}
+              px={2.5}
+              py={1.5}
+              rounded="md"
+              color={blogActive ? "blue.fg" : "fg.muted"}
+              bg={blogActive ? "blue.subtle" : "transparent"}
+              _hover={{ bg: "bg.muted", color: "fg" }}
+            >
+              <Text fontSize="sm" fontWeight="semibold">
+                Blog
+              </Text>
+            </HStack>
+          </Link>
           <Text
             display={{ base: "none", md: "block" }}
             fontSize="xs"

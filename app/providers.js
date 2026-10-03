@@ -40,10 +40,6 @@ const system = createSystem(
   }),
 );
 
-// Registry ini memastikan style Emotion (termasuk global reset Chakra)
-// di-flush ke HTML stream dengan benar saat SSR di Next.js App Router,
-// sehingga tidak mismatch dengan hasil render pertama di client.
-// Pola resmi dari tim Emotion: https://github.com/emotion-js/emotion/issues/2928
 function EmotionRegistry({ children }) {
   const [{ cache, flush }] = useState(() => {
     const cache = createCache({ key: "css" });

@@ -55,11 +55,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Resolve registry image name
+        id: image
+        # GHCR menolak image reference huruf besar, tapi
+        # github.repository_owner bisa "BacingDev". Paksa lowercase di sini
+        # supaya nama image sama persis dengan yang di .env VPS.
+        run: |
+          owner="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          echo "ref=${REGISTRY}/${owner}/${IMAGE_NAME}" >> "$GITHUB_OUTPUT"
+
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          images: ${{ steps.image.outputs.ref }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
@@ -90,10 +99,40 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script_stop: true
-          envs: GITHUB_USERNAME
           script: |
-            set -e
+            set -eu
             cd /home/serverubuntu/app
+
+            # Credential GHCR sudah di-set sekali lewat `docker login ghcr.io`.
+            # Kalau belum, pull akan 401 dan step ini gagal di sini.
+            if [ ! -f .env ]; then
+              echo "ERROR: /home/serverubuntu/app/.env tidak ada di VPS"
+              exit 1
+            fi
+
             docker compose pull frontend
-            docker compose up -d --no-deps --force-recreate frontend
+            docker compose up -d --force-recreate frontend
+
+            # Tunggu container frontend benar-benar healthy, kalau tidak
+            # healthy return error supaya kelihatan di log Actions.
+            echo "Menunggu frontend healthy..."
+            i=0
+            while [ "$i" -lt 30 ]; do
+              i=$((i + 1))
+              cid="$(docker compose ps -q frontend)"
+              if [ -n "$cid" ] && \
+                 [ "$(docker inspect -f '{{.State.Health.Status}}' "$cid")" = "healthy" ]; then
+                echo "Frontend healthy pada percobaan ke-${i}"
+                break
+              fi
+              if [ "$i" -ge 30 ]; then
+                echo "ERROR: frontend tidak jadi healthy"
+                docker compose logs --tail=50 frontend
+                exit 1
+              fi
+              sleep 10
+            done
+
             docker image prune -f
+            echo "=== Deploy selesai ==="
+            docker compose ps

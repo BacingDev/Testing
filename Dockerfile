@@ -57,5 +57,8 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+# Batasi heap V8 supaya Node tidak tumbuh sampai kena limit container
+# dan memicu OOM killer di VPS 2GB.
+ENV NODE_OPTIONS="--max-old-space-size=384"
 
 CMD ["node", "server.js"]

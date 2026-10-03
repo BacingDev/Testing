@@ -50,8 +50,3 @@ docker-compose.yml
 next-env.d.ts
 vercel.json
 .netlify
-
-# Large data files (sudah di git tapi tidak perlu di image)
-data/flow-payload.json
-data/flow-store.json
-database/*.png

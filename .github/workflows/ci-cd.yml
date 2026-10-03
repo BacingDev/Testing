@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: frontend
 
 jobs:
   lint-and-test:
@@ -59,11 +59,11 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
             type=sha,prefix=
-            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -89,8 +89,11 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
+          script_stop: true
+          envs: GITHUB_USERNAME
           script: |
-            cd /opt/workflow-studio
-            docker compose pull
-            docker compose up -d --remove-orphans
+            set -e
+            cd /home/serverubuntu/app
+            docker compose pull frontend
+            docker compose up -d --no-deps --force-recreate frontend
             docker image prune -f

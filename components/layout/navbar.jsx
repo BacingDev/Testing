@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
 import {
   TbDeviceFloppy,
   TbDownload,
   TbHierarchy2,
+  TbLogout,
   TbZoomScan,
 } from "react-icons/tb";
 import { saveGraph } from "@/lib/flow-save";
@@ -18,9 +19,21 @@ import BackendStatus from "@/components/layout/backend-status";
 export default function Navbar() {
   const zoom = useFlowStore((state) => state.zoom);
   const pathname = usePathname();
+  const router = useRouter();
   const blogActive = pathname?.startsWith("/blog") ?? false;
   const dirty = useGraphStore((state) => state.dirty);
   const [saveState, setSaveState] = useState("idle");
+  const [hasToken, setHasToken] = useState(false);
+
+  useEffect(() => {
+    setHasToken(!!localStorage.getItem("access_token"));
+  }, [pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    router.push("/auth/login");
+  };
 
   const handleSave = async () => {
     if (saveState === "saving") return;
@@ -126,16 +139,31 @@ export default function Navbar() {
             Ekspor
           </Button>
           <HStack gap={1}>
-            <Link href="/auth/login" style={{ textDecoration: "none" }}>
-              <Button size="xs" variant="outline" colorPalette="blue">
-                Masuk
+            {hasToken ? (
+              <Button
+                size="xs"
+                variant="outline"
+                colorPalette="red"
+                onClick={handleLogout}
+                title="Keluar dan hapus sesi"
+              >
+                <TbLogout size={14} />
+                Keluar
               </Button>
-            </Link>
-            <Link href="/auth/register" style={{ textDecoration: "none" }}>
-              <Button size="xs" variant="outline" colorPalette="green">
-                Daftar
-              </Button>
-            </Link>
+            ) : (
+              <>
+                <Link href="/auth/login" style={{ textDecoration: "none" }}>
+                  <Button size="xs" variant="outline" colorPalette="blue">
+                    Masuk
+                  </Button>
+                </Link>
+                <Link href="/auth/register" style={{ textDecoration: "none" }}>
+                  <Button size="xs" variant="outline" colorPalette="green">
+                    Daftar
+                  </Button>
+                </Link>
+              </>
+            )}
           </HStack>
         </HStack>
       </Flex>

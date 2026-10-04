@@ -27,6 +27,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const blogActive = pathname?.startsWith("/blog") ?? false;
+  const listActive = pathname?.startsWith("/list") ?? false;
   const dirty = useGraphStore((state) => state.dirty);
   const [saveState, setSaveState] = useState("idle");
   const token = useSyncExternalStore(
@@ -97,6 +98,21 @@ export default function Navbar() {
             >
               <Text fontSize="xs" fontWeight="semibold">
                 Blog
+              </Text>
+            </HStack>
+          </Link>
+          <Link href="/list" style={{ textDecoration: "none", color: "inherit" }}>
+            <HStack
+              gap={1.5}
+              px={2}
+              py={0.5}
+              rounded="md"
+              color={listActive ? "green.fg" : "fg.muted"}
+              bg={listActive ? "green.subtle" : "transparent"}
+              _hover={{ bg: "bg.muted", color: "fg" }}
+            >
+              <Text fontSize="xs" fontWeight="semibold">
+                List
               </Text>
             </HStack>
           </Link>

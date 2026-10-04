@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
@@ -12,6 +12,12 @@ import {
   TbZoomScan,
 } from "react-icons/tb";
 import { saveGraph } from "@/lib/flow-save";
+import {
+  clearAuth,
+  getAuthToken,
+  getServerAuthToken,
+  subscribeAuth,
+} from "@/lib/auth-token";
 import { useFlowStore } from "@/stores/flow-store";
 import { useGraphStore } from "@/stores/graph-store";
 import BackendStatus from "@/components/layout/backend-status";
@@ -23,15 +29,15 @@ export default function Navbar() {
   const blogActive = pathname?.startsWith("/blog") ?? false;
   const dirty = useGraphStore((state) => state.dirty);
   const [saveState, setSaveState] = useState("idle");
-  const [hasToken, setHasToken] = useState(false);
-
-  useEffect(() => {
-    setHasToken(!!localStorage.getItem("access_token"));
-  }, [pathname]);
+  const token = useSyncExternalStore(
+    subscribeAuth,
+    getAuthToken,
+    getServerAuthToken,
+  );
+  const hasToken = token !== null;
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    clearAuth();
     router.push("/auth/login");
   };
 

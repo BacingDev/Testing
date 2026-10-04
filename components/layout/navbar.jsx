@@ -59,8 +59,8 @@ export default function Navbar() {
       py={1.5}
     >
       <Flex align="center" justify="space-between" gap={3}>
-        <HStack gap={4}>
-          <HStack gap={1.5} color="fg">
+        <HStack gap={4} color="fg">
+          <HStack gap={1.5}>
             <TbHierarchy2 size={15} />
             <Text fontSize="xs" fontWeight="bold" letterSpacing="tight">
               Workflow Studio
@@ -125,6 +125,14 @@ export default function Navbar() {
             <TbDownload size={14} />
             Ekspor
           </Button>
+          <HStack gap={1} px={1.5} py={0.5} rounded="md" borderWidth="1px" borderColor="border" bg="bg.muted" color="fg">
+            <Button size="xs" variant="outline" colorPalette="blue" href="/login">
+              Masuk
+            </Button>
+            <Button size="xs" variant="outline" colorPalette="green" href="/register">
+              Daftar
+            </Button>
+          </HStack>
         </HStack>
       </Flex>
     </Box>

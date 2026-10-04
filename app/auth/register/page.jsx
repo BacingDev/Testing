@@ -1,75 +1,122 @@
 "use client";
 
 import { useState } from "react";
-import { Box, FormControl, Input, Label, Button, Text, ErrorMessage } from "@chakra-ui/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Box, Button, Input, Text } from "@chakra-ui/react";
+
+// Gateway nginx memangkas prefix /api/<service>, jadi path lengkapnya:
+// /api/user-management/ -> http://127.0.0.1:8001/ (service IDP/OAuth)
+const REGISTER_URL = "/api/user-management/v1/auth/register";
+
+function readError(data, fallback) {
+  const detail = data?.detail;
+  if (Array.isArray(detail)) {
+    return detail.map((d) => d?.msg ?? JSON.stringify(d)).join(", ");
+  }
+  if (typeof detail === "string" && detail) return detail;
+  return fallback;
+}
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
+  const router = useRouter();
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
+    setLoading(true);
     try {
-      const res = await fetch("/api/v1/auth/register", {
+      const res = await fetch(REGISTER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        // Kontrak BE (UserCreate): email + password wajib, full_name opsional.
+        // Register mengembalikan 201 UserRead (tanpa token), jadi setelah
+        // sukses arahkan ke halaman login.
+        body: JSON.stringify({
+          email,
+          password,
+          ...(fullName ? { full_name: fullName } : {}),
+        }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Registrasi gagal");
-      if (data.access_token) localStorage.setItem("access_token", data.access_token);
-      router.push("/");
-    } catch (err: any) {
-      setError(err.message || "Registrasi gagal");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(readError(data, `Registrasi gagal (HTTP ${res.status})`));
+      }
+      router.push("/auth/login");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Box w="100%" maxW="400px" mx="auto" my="20px" py="40px" bg="bg.panel" rounded="lg">
-      <Box textAlign="center" mb="30px">
-        <Text fontSize="xl" fontWeight="bold" color="fg">
-          Daftar
-        </Text>
-      </Box>
-      <FormControl onSubmit={handleSubmit} sx={{ maxW: "400px", width: "100%" }}>
+    <Box
+      maxW="400px"
+      mx="auto"
+      my="40px"
+      px="24px"
+      py="32px"
+      bg="bg.panel"
+      rounded="lg"
+      borderWidth="1px"
+      borderColor="border"
+    >
+      <Text fontSize="xl" fontWeight="bold" textAlign="center" mb="24px">
+        Daftar
+      </Text>
+      <form onSubmit={handleSubmit} style={{ width: "100%" }}>
         <Input
-          placeholder="Nama lengkap"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          mb="16px"
+          type="text"
+          placeholder="Nama lengkap (opsional)"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          mb="12px"
         />
         <Input
+          type="email"
+          required
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          isInvalid={!!error}
-          mb="16px"
+          mb="12px"
         />
         <Input
           type="password"
-          placeholder="Password"
+          required
+          minLength={8}
+          placeholder="Password (min. 8 karakter)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          isInvalid={!!error}
-          mb="24px"
+          mb="20px"
         />
-        <Button type="submit" w="100%" mb="8px" colorPalette="green">
+        <Button
+          type="submit"
+          w="100%"
+          colorPalette="green"
+          loading={loading}
+          disabled={loading}
+        >
           Daftar
         </Button>
-        {error && <ErrorMessage color="red" mt="4px">{error}</ErrorMessage>}
-        <Box textAlign="center" mt="20px">
-          <Text color="fg.muted" fontSize="sm">
-            Sudah punya akun? <Link href="/login" color="blue.fg" fontWeight="semibold">
-              Masuk sekarang
-            </Link>
+        {error ? (
+          <Text color="red" fontSize="sm" mt="12px">
+            {error}
           </Text>
-        </Box>
-      </FormControl>
+        ) : null}
+      </form>
+      <Text fontSize="sm" color="fg.muted" textAlign="center" mt="20px">
+        Sudah punya akun?{" "}
+        <Link href="/auth/login" style={{ fontWeight: 600 }}>
+          Masuk sekarang
+        </Link>
+      </Text>
     </Box>
   );
 }

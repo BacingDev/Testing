@@ -125,13 +125,17 @@ export default function Navbar() {
             <TbDownload size={14} />
             Ekspor
           </Button>
-          <HStack gap={1} px={1.5} py={0.5} rounded="md" borderWidth="1px" borderColor="border" bg="bg.muted" color="fg">
-            <Button size="xs" variant="outline" colorPalette="blue" href="/login">
-              Masuk
-            </Button>
-            <Button size="xs" variant="outline" colorPalette="green" href="/register">
-              Daftar
-            </Button>
+          <HStack gap={1}>
+            <Link href="/auth/login" style={{ textDecoration: "none" }}>
+              <Button size="xs" variant="outline" colorPalette="blue">
+                Masuk
+              </Button>
+            </Link>
+            <Link href="/auth/register" style={{ textDecoration: "none" }}>
+              <Button size="xs" variant="outline" colorPalette="green">
+                Daftar
+              </Button>
+            </Link>
           </HStack>
         </HStack>
       </Flex>

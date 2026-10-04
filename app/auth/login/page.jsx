@@ -1,69 +1,112 @@
 "use client";
 
 import { useState } from "react";
-import { Box, FormControl, Input, Label, Button, Text, ErrorMessage } from "@chakra-ui/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Box, Button, Input, Text } from "@chakra-ui/react";
+
+// Gateway nginx memangkas prefix /api/<service>, jadi path lengkapnya:
+// /api/user-management/ -> http://127.0.0.1:8001/ (service IDP/OAuth)
+const LOGIN_URL = "/api/user-management/v1/auth/login/json";
+
+function readError(data, fallback) {
+  const detail = data?.detail;
+  if (Array.isArray(detail)) {
+    return detail.map((d) => d?.msg ?? JSON.stringify(d)).join(", ");
+  }
+  if (typeof detail === "string" && detail) return detail;
+  return fallback;
+}
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
     setError("");
+    setLoading(true);
     try {
-      const res = await fetch("/api/v1/auth/login/json", {
+      const res = await fetch(LOGIN_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Login failed");
-      // Simpan token ke localStorage agar bisa dipakai di request selanjutnya
-      if (data.access_token) localStorage.setItem("access_token", data.access_token);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(readError(data, `Login gagal (HTTP ${res.status})`));
+      }
+      if (data.access_token) {
+        localStorage.setItem("access_token", data.access_token);
+      }
+      if (data.refresh_token) {
+        localStorage.setItem("refresh_token", data.refresh_token);
+      }
       router.push("/");
-    } catch (err: any) {
-      setError(err.message || "Login gagal");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Box w="100%" maxW="400px" mx="auto" my="20px" py="40px" bg="bg.panel" rounded="lg">
-      <Box textAlign="center" mb="30px">
-        <Text fontSize="xl" fontWeight="bold" color="fg">
-          Login
-        </Text>
-      </Box>
-      <FormControl onSubmit={handleSubmit} sx={{ maxW: "400px", width: "100%" }}>
+    <Box
+      maxW="400px"
+      mx="auto"
+      my="40px"
+      px="24px"
+      py="32px"
+      bg="bg.panel"
+      rounded="lg"
+      borderWidth="1px"
+      borderColor="border"
+    >
+      <Text fontSize="xl" fontWeight="bold" textAlign="center" mb="24px">
+        Masuk
+      </Text>
+      <form onSubmit={handleSubmit} style={{ width: "100%" }}>
         <Input
+          type="email"
+          required
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          isInvalid={!!error}
-          mb="16px"
+          mb="12px"
         />
         <Input
           type="password"
+          required
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          isInvalid={!!error}
-          mb="24px"
+          mb="20px"
         />
-        <Button type="submit" w="100%" mb="8px" colorPalette="blue">
+        <Button
+          type="submit"
+          w="100%"
+          colorPalette="blue"
+          loading={loading}
+          disabled={loading}
+        >
           Masuk
         </Button>
-        {error && <ErrorMessage color="red" mt="4px">{error}</ErrorMessage>}
-        <Box textAlign="center" mt="20px">
-          <Text color="fg.muted" fontSize="sm">
-            Belum punya akun? <Link href="/register" color="blue.fg" fontWeight="semibold">
-              Daftar sekarang
-            </Link>
+        {error ? (
+          <Text color="red" fontSize="sm" mt="12px">
+            {error}
           </Text>
-        </Box>
-      </FormControl>
+        ) : null}
+      </form>
+      <Text fontSize="sm" color="fg.muted" textAlign="center" mt="20px">
+        Belum punya akun?{" "}
+        <Link href="/auth/register" style={{ fontWeight: 600 }}>
+          Daftar sekarang
+        </Link>
+      </Text>
     </Box>
   );
 }

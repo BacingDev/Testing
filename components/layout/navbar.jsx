@@ -81,12 +81,20 @@ export default function Navbar() {
     >
       <Flex align="center" justify="space-between" gap={3}>
         <HStack gap={4} color="fg">
-          <HStack gap={1.5}>
-            <TbHierarchy2 size={15} />
-            <Text fontSize="xs" fontWeight="bold" letterSpacing="tight">
-              Workflow Studio
-            </Text>
-          </HStack>
+          <Link href="/" style={{ textDecoration: "none", color: "inherit" }} title="Ke halaman utama">
+            <HStack
+              gap={1.5}
+              px={2}
+              py={0.5}
+              rounded="md"
+              _hover={{ bg: "bg.muted" }}
+            >
+              <TbHierarchy2 size={15} />
+              <Text fontSize="xs" fontWeight="bold" letterSpacing="tight">
+                Workflow Studio
+              </Text>
+            </HStack>
+          </Link>
           <Link href="/blog" style={{ textDecoration: "none", color: "inherit" }}>
             <HStack
               gap={1.5}

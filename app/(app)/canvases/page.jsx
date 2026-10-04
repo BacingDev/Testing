@@ -214,7 +214,15 @@ export default function CanvasesPage() {
               >
                 <Flex align="flex-start" justify="space-between" gap={3}>
                   <Box minWidth="0" flex="1">
-                    <Text fontWeight="semibold">{canvas.name}</Text>
+                    <Text
+                      fontWeight="semibold"
+                      cursor="pointer"
+                      title="Klik untuk muat ke editor"
+                      _hover={{ color: "purple.fg" }}
+                      onClick={() => handleLoad(canvas)}
+                    >
+                      {canvas.name}
+                    </Text>
                     {canvas.description ? (
                       <Text fontSize="sm" color="fg.muted">
                         {canvas.description}

@@ -34,28 +34,28 @@ export default function ContextMenu() {
       borderBottomWidth="1px"
       borderColor="border"
       bg="bg.panel"
-      px={{ base: 4, sm: 6 }}
-      py={2}
+      px={{ base: 3, sm: 4 }}
+      py={1}
       overflowX="auto"
     >
-      <Flex align="center" justify="space-between" gap={4}>
+      <Flex align="center" justify="space-between" gap={3}>
         <Flex as="ul" listStyleType="none" align="center" gap={1}>
           {CONTEXT_ITEMS.map((item, index) => (
             <Box as="li" key={item.key}>
               <Button
-                size="sm"
+                size="2xs"
                 variant={index === 0 ? "solid" : "ghost"}
                 colorPalette="gray"
               >
-                <item.icon style={{ marginRight: "6px" }} />
+                <item.icon size={13} />
                 {item.label}
               </Button>
             </Box>
           ))}
         </Flex>
-        <HStack gap={1}>
+        <HStack gap={0.5}>
           <IconButton
-            size="sm"
+            size="2xs"
             variant="ghost"
             colorPalette="gray"
             aria-label="Perkecil (zoom out)"
@@ -63,13 +63,13 @@ export default function ContextMenu() {
           >
             <TbZoomOut />
           </IconButton>
-          <Button size="sm" variant="ghost" cursor="default" minWidth="3.5rem">
+          <Button size="2xs" variant="ghost" cursor="default" minWidth="2.75rem">
             <Text fontSize="xs" fontWeight="semibold" tabularNums>
               {Math.round(zoom * 100)}%
             </Text>
           </Button>
           <IconButton
-            size="sm"
+            size="2xs"
             variant="ghost"
             colorPalette="gray"
             aria-label="Perbesar (zoom in)"
@@ -78,7 +78,7 @@ export default function ContextMenu() {
             <TbZoomIn />
           </IconButton>
           <IconButton
-            size="sm"
+            size="2xs"
             variant="ghost"
             colorPalette="gray"
             aria-label="Reset zoom"
@@ -87,7 +87,7 @@ export default function ContextMenu() {
             <TbZoomReset />
           </IconButton>
           <IconButton
-            size="sm"
+            size="2xs"
             variant="ghost"
             colorPalette="gray"
             aria-label="Fit view"

@@ -54,28 +54,28 @@ export default function Navbar() {
       borderBottomWidth="1px"
       borderColor="border"
       bg="bg.panel"
-      px={{ base: 4, sm: 6 }}
-      py={3}
+      px={{ base: 3, sm: 4 }}
+      py={1.5}
     >
-      <Flex align="center" justify="space-between" gap={4}>
-        <HStack gap={6}>
-          <HStack gap={2} color="fg">
-            <TbHierarchy2 size={18} />
-            <Text fontSize="sm" fontWeight="bold" letterSpacing="tight">
+      <Flex align="center" justify="space-between" gap={3}>
+        <HStack gap={4}>
+          <HStack gap={1.5} color="fg">
+            <TbHierarchy2 size={15} />
+            <Text fontSize="xs" fontWeight="bold" letterSpacing="tight">
               Workflow Studio
             </Text>
           </HStack>
           <Link href="/blog" style={{ textDecoration: "none", color: "inherit" }}>
             <HStack
               gap={1.5}
-              px={2.5}
-              py={1.5}
+              px={2}
+              py={0.5}
               rounded="md"
               color={blogActive ? "blue.fg" : "fg.muted"}
               bg={blogActive ? "blue.subtle" : "transparent"}
               _hover={{ bg: "bg.muted", color: "fg" }}
             >
-              <Text fontSize="sm" fontWeight="semibold">
+              <Text fontSize="xs" fontWeight="semibold">
                 Blog
               </Text>
             </HStack>
@@ -88,24 +88,24 @@ export default function Navbar() {
             Diagram parent / nodes / edges
           </Text>
         </HStack>
-        <HStack gap={2}>
+        <HStack gap={1.5}>
           <HStack
-            gap={1.5}
-            px={2}
-            py={1}
+            gap={1}
+            px={1.5}
+            py={0.5}
             rounded="md"
             borderWidth="1px"
             borderColor="border"
             bg="bg.muted"
             color="fg"
           >
-            <TbZoomScan size={14} />
+            <TbZoomScan size={12} />
             <Text fontSize="xs" fontWeight="semibold" tabularNums>
               {Math.round(zoom * 100)}%
             </Text>
           </HStack>
           <Button
-            size="sm"
+            size="xs"
             variant="outline"
             loading={saveState === "saving"}
             colorPalette={saveState === "error" ? "red" : undefined}
@@ -116,11 +116,11 @@ export default function Navbar() {
             }
             onClick={handleSave}
           >
-            <TbDeviceFloppy style={{ marginRight: "6px" }} />
+            <TbDeviceFloppy size={14} />
             {saveLabel}
           </Button>
-          <Button size="sm" variant="solid" colorPalette="gray">
-            <TbDownload style={{ marginRight: "6px" }} />
+          <Button size="xs" variant="solid" colorPalette="gray">
+            <TbDownload size={14} />
             Ekspor
           </Button>
         </HStack>

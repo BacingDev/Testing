@@ -2,11 +2,11 @@ import { MarkerType, Position } from "@xyflow/react";
 import flowPayload from "@/data/flow-payload.json";
 import { UNIT_CATALOG } from "@/data/unit-catalog";
 
-/** Image default jika path /pfm/units belum tersedia. */
+/** Image default jika path komponen belum tersedia. */
 export const DEFAULT_NODE_IMAGE = "/default-unit.svg";
 
 /** Gambar external (inlet/export) yang tidak ada di katalog. */
-export const EXTERNAL_NODE_IMAGE = "/pfm/units/EXTERNAL.svg";
+export const EXTERNAL_NODE_IMAGE = "/default-unit.svg";
 
 /** Peta nama unit → path gambar terbaru dari katalog. */
 const UNIT_IMAGE_BY_NAME = UNIT_CATALOG.reduce((map, unit) => {

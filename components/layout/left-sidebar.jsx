@@ -13,13 +13,15 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import {
-  TbAffiliate,
   TbArrowsSplit,
+  TbBolt,
   TbBox,
-  TbBuildingFactory,
   TbCircleDot,
   TbDiamond,
+  TbEdit,
+  TbLayoutDashboard,
   TbSquare,
+  TbTable,
 } from "react-icons/tb";
 import { getUnitsByCategory, UNIT_CATEGORIES } from "@/data/unit-catalog";
 import { useFlowStore } from "@/stores/flow-store";
@@ -27,15 +29,17 @@ import { useFlowStore } from "@/stores/flow-store";
 const DRAG_MIME = "application/x-myapp-unit";
 
 const CATEGORY_ICON = {
-  equipment: TbBuildingFactory,
-  organization: TbAffiliate,
+  layout: TbLayoutDashboard,
+  data: TbTable,
+  form: TbEdit,
+  action: TbBolt,
 };
 
 const TOOL_ITEMS = [
   {
     key: "node",
     icon: TbBox,
-    tooltip: "Tambah node — drag unit ke canvas",
+    tooltip: "Tambah node — drag komponen ke canvas",
   },
   {
     key: "edge",
@@ -62,7 +66,7 @@ const TOOL_ITEMS = [
   },
 ];
 
-function UnitItem({ unit }) {
+function ComponentItem({ unit }) {
   return (
     <Box>
       <Button
@@ -175,7 +179,7 @@ export default function LeftSidebar() {
                 </HStack>
                 <Flex direction="column" gap={1.5} pb={3}>
                   {getUnitsByCategory(category.key).map((unit) => (
-                    <UnitItem key={unit.id} unit={unit} />
+                    <ComponentItem key={unit.id} unit={unit} />
                   ))}
                 </Flex>
                 <Separator />

@@ -242,7 +242,7 @@ function nodeTable(node) {
   return kvTable([
     ["ID", String(node.id)],
     ["Nama", nodeName(node)],
-    ["Tipe fasilitas", data.facilityType || "-"],
+    ["Tipe komponen", data.componentType || data.facilityType || "-"],
     ["Parent", data.parentName || data.parentId || "-"],
     ["Punya child", data.hasChildren ? "Ya" : "Tidak"],
     ["Punya metadata", data.hasMetadata ? "Ya" : "Tidak"],

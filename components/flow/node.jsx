@@ -151,7 +151,7 @@ export const UnitNodeLabel = memo(function UnitNodeLabel({
 // UnitNodePreview
 // ---------------------------------------------------------------------------
 
-/** Rasio intrinsik default semua gambar unit (viewBox 160×100). */
+/** Rasio intrinsik default semua gambar komponen (viewBox 160×100). */
 const FALLBACK_IMAGE = { width: 160, height: 100 };
 
 function drawnSize(
@@ -610,7 +610,7 @@ function NodePropertiesForm({ node, onCancel, onSave }) {
             <Field.Label>Gambar unit</Field.Label>
             <ImagePicker value={image} onChange={setImage} />
             <Field.HelperText>
-              Sumber gambar sama dengan daftar unit di sidebar kiri.
+              Sumber gambar sama dengan daftar komponen di sidebar kiri.
             </Field.HelperText>
           </Field.Root>
 

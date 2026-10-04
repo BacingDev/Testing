@@ -81,7 +81,11 @@ export default function Navbar() {
     >
       <Flex align="center" justify="space-between" gap={3}>
         <HStack gap={4} color="fg">
-          <Link href="/" style={{ textDecoration: "none", color: "inherit" }} title="Ke halaman utama">
+          <Link
+            href="/"
+            style={{ textDecoration: "none", color: "inherit" }}
+            title="Ke halaman utama"
+          >
             <HStack
               gap={1.5}
               px={2}
@@ -95,7 +99,10 @@ export default function Navbar() {
               </Text>
             </HStack>
           </Link>
-          <Link href="/blog" style={{ textDecoration: "none", color: "inherit" }}>
+          <Link
+            href="/blog"
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
             <HStack
               gap={1.5}
               px={2}
@@ -110,7 +117,10 @@ export default function Navbar() {
               </Text>
             </HStack>
           </Link>
-          <Link href="/list" style={{ textDecoration: "none", color: "inherit" }}>
+          <Link
+            href="/list"
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
             <HStack
               gap={1.5}
               px={2}
@@ -125,7 +135,10 @@ export default function Navbar() {
               </Text>
             </HStack>
           </Link>
-          <Link href="/canvases" style={{ textDecoration: "none", color: "inherit" }}>
+          <Link
+            href="/canvases"
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
             <HStack
               gap={1.5}
               px={2}
@@ -136,17 +149,10 @@ export default function Navbar() {
               _hover={{ bg: "bg.muted", color: "fg" }}
             >
               <Text fontSize="xs" fontWeight="semibold">
-                Canvas
+                Preview
               </Text>
             </HStack>
           </Link>
-          <Text
-            display={{ base: "none", md: "block" }}
-            fontSize="xs"
-            color="fg.muted"
-          >
-            Diagram parent / nodes / edges
-          </Text>
         </HStack>
         <HStack gap={1.5}>
           <BackendStatus />

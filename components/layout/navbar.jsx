@@ -13,6 +13,7 @@ import {
 import { saveGraph } from "@/lib/flow-save";
 import { useFlowStore } from "@/stores/flow-store";
 import { useGraphStore } from "@/stores/graph-store";
+import BackendStatus from "@/components/layout/backend-status";
 
 export default function Navbar() {
   const zoom = useFlowStore((state) => state.zoom);
@@ -89,6 +90,7 @@ export default function Navbar() {
           </Text>
         </HStack>
         <HStack gap={1.5}>
+          <BackendStatus />
           <HStack
             gap={1}
             px={1.5}

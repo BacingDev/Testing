@@ -1,6 +1,7 @@
 import { MarkerType, Position } from "@xyflow/react";
 import flowPayload from "@/data/flow-payload.json";
 import { UNIT_CATALOG } from "@/data/unit-catalog";
+import { WIDGET_DEFAULTS } from "@/components/flow/widget-preview";
 
 /** Image default jika path komponen belum tersedia. */
 export const DEFAULT_NODE_IMAGE = "/default-unit.svg";
@@ -122,6 +123,10 @@ export function createUnitNode(unit, position) {
       shown: "T",
       style: {},
       ports: [],
+      // Jenis komponen + isi defaultnya. Ikut ke-save ke BE apa adanya
+      // (kolom JSONB) supaya preview bisa render hasil yang sama.
+      unitId: unit.id,
+      widget: { ...(WIDGET_DEFAULTS[unit.id] ?? {}) },
     },
   };
 }

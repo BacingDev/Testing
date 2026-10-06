@@ -36,6 +36,12 @@ import {
 } from "@xyflow/react";
 import { TbX } from "react-icons/tb";
 import { FlowPort, GhostPortHandle } from "@/components/flow/port";
+import {
+  getUnitId,
+  WidgetDraftPreview,
+  WidgetFields,
+  WidgetPreview,
+} from "@/components/flow/widget-preview";
 import { useFlowContext } from "@/components/flow/flow-context";
 import { RangeControl } from "@/components/ui/range-control";
 import { DEFAULT_NODE_IMAGE } from "@/data/dummy-flow";
@@ -387,6 +393,9 @@ function UnitNodeComponent({ id, data, selected, width, height }) {
   );
 
   const ports = data.ports ?? [];
+  // Jenis komponen app-builder (button/text/dll). Kalau ada, badan node
+  // menampilkan komponen beneran supaya hasil drag langsung kelihatan.
+  const unitId = getUnitId(data);
   // sidelocation 0 = bawah — dorong nama node agar tidak menutupi port/label port
   const bottomPorts = ports.filter((port) => port.sidelocation === 0);
   const hasTallBottom = bottomPorts.some(
@@ -405,13 +414,24 @@ function UnitNodeComponent({ id, data, selected, width, height }) {
         opacity: data.shown === "T" ? 1 : 0.35,
       }}
     >
-      <UnitNodePreview
-        image={data.image}
-        label={data.label}
-        style={data.style}
-        width={nodeWidth}
-        height={nodeHeight}
-      />
+      {unitId ? (
+        <WidgetPreview
+          unitId={unitId}
+          widget={data.widget}
+          label={data.label}
+          image={data.image}
+          interactive={false}
+          showLabel={false}
+        />
+      ) : (
+        <UnitNodePreview
+          image={data.image}
+          label={data.label}
+          style={data.style}
+          width={nodeWidth}
+          height={nodeHeight}
+        />
+      )}
       <NodeBorder
         height={nodeHeight}
         width={nodeWidth}
@@ -555,8 +575,10 @@ function ImagePicker({ value, onChange }) {
 
 function NodePropertiesForm({ node, onCancel, onSave }) {
   const initialStyle = node.data.style ?? {};
+  const dialogUnitId = getUnitId(node.data);
   const [label, setLabel] = useState(node.data.label ?? "");
   const [image, setImage] = useState(node.data.image ?? "");
+  const [widget, setWidget] = useState(node.data.widget ?? {});
   const [visual, setVisual] = useState(initialStyle.visual ?? "fit");
   const [rotate, setRotate] = useState(initialStyle.rotate ?? 0);
   const [flipHorizontal, setFlipHorizontal] = useState(
@@ -580,6 +602,7 @@ function NodePropertiesForm({ node, onCancel, onSave }) {
       image,
       shown: shown ? "T" : "F",
       style: draftStyle,
+      widget,
     });
   };
 
@@ -605,6 +628,20 @@ function NodePropertiesForm({ node, onCancel, onSave }) {
               onChange={(event) => setLabel(event.target.value)}
             />
           </Field.Root>
+
+          {dialogUnitId ? (
+            <Field.Root>
+              <Field.Label>Isi komponen ({dialogUnitId})</Field.Label>
+              <WidgetFields
+                unitId={dialogUnitId}
+                widget={widget}
+                onChange={setWidget}
+              />
+              <Field.HelperText>
+                Langsung terlihat di canvas setelah disimpan.
+              </Field.HelperText>
+            </Field.Root>
+          ) : null}
 
           <Field.Root>
             <Field.Label>Gambar unit</Field.Label>
@@ -707,13 +744,22 @@ function NodePropertiesForm({ node, onCancel, onSave }) {
                 width={`${PREVIEW_WIDTH}px`}
                 height={`${PREVIEW_HEIGHT}px`}
               >
-                <UnitNodePreview
-                  image={image}
-                  label={label}
-                  style={draftStyle}
-                  width={PREVIEW_WIDTH}
-                  height={PREVIEW_HEIGHT}
-                />
+                {dialogUnitId ? (
+                  <WidgetDraftPreview
+                    unitId={dialogUnitId}
+                    widget={widget}
+                    label={label}
+                    image={image}
+                  />
+                ) : (
+                  <UnitNodePreview
+                    image={image}
+                    label={label}
+                    style={draftStyle}
+                    width={PREVIEW_WIDTH}
+                    height={PREVIEW_HEIGHT}
+                  />
+                )}
               </Box>
             </Flex>
           </Field.Root>

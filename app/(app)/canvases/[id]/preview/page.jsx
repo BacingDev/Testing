@@ -7,12 +7,17 @@ import { Badge, Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
 import { TbArrowLeft } from "react-icons/tb";
 import Navbar from "@/components/layout/navbar";
 import { getCanvasGraph } from "@/lib/canvas-api";
+import { WidgetPreview } from "@/components/flow/widget-preview";
 
 /**
  * Pratinjau runtime ala artikel app builder: graph yang sama dibaca dari
  * server, tapi dirender tanpa chrome editor (tidak bisa drag, connect,
- * atau select). Node custom editor dipetakan ke node bawaan supaya preview
- * tidak tergantung pada store editor.
+ * atau select).
+ *
+ * Dua cara melihat hasil:
+ * - Tab Hasil: komponen dirender beneran dari atas ke bawah seperti aplikasi
+ *   jadi (button bisa diklik, input bisa diketik).
+ * - Tab Graph: struktur node/edge read-only seperti di editor.
  */
 function toPreviewNodes(nodes) {
   return (nodes ?? []).map((node) => ({
@@ -21,7 +26,12 @@ function toPreviewNodes(nodes) {
       x: Number(node.position?.x ?? 0),
       y: Number(node.position?.y ?? 0),
     },
-    data: { label: node.data?.label ?? node.key },
+    data: {
+      label: node.data?.label ?? node.key,
+      unitId: node.data?.unitId ?? node.data?.componentType ?? null,
+      widget: node.data?.widget ?? {},
+      image: node.data?.image ?? null,
+    },
   }));
 }
 
@@ -39,6 +49,7 @@ export default function CanvasPreviewPage({ params }) {
   const [edges, setEdges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState("hasil");
 
   useEffect(() => {
     let active = true;
@@ -84,6 +95,29 @@ export default function CanvasPreviewPage({ params }) {
             read-only, {nodes.length} node, {edges.length} edge
           </Text>
         </HStack>
+        <HStack gap={1} mb={4}>
+          <Button
+            size="xs"
+            variant={tab === "hasil" ? "solid" : "outline"}
+            colorPalette="purple"
+            onClick={() => setTab("hasil")}
+          >
+            Hasil
+          </Button>
+          <Button
+            size="xs"
+            variant={tab === "graph" ? "solid" : "outline"}
+            colorPalette="purple"
+            onClick={() => setTab("graph")}
+          >
+            Graph
+          </Button>
+          <Text fontSize="xs" color="fg.muted" ml={1}>
+            {tab === "hasil"
+              ? "tampilan aplikasi jadi, bisa diklik/diketik"
+              : "struktur node seperti di editor"}
+          </Text>
+        </HStack>
         {error ? (
           <Text color="red" fontSize="sm" mb={4}>
             {error}
@@ -103,6 +137,47 @@ export default function CanvasPreviewPage({ params }) {
                 Memuat pratinjau…
               </Text>
             </Flex>
+          ) : tab === "hasil" ? (
+            <Box height="100%" overflowY="auto" p={4}>
+              {nodes.length === 0 ? (
+                <Text fontSize="sm" color="fg.muted" textAlign="center" mt={8}>
+                  Canvas masih kosong — tambah komponen di editor lalu simpan.
+                </Text>
+              ) : (
+                <Flex direction="column" gap={3} maxW="560px" mx="auto">
+                  {[...nodes]
+                    .sort(
+                      (a, b) =>
+                        a.position.y - b.position.y || a.position.x - b.position.x,
+                    )
+                    .map((node) => (
+                      <Box
+                        key={node.id}
+                        borderWidth="1px"
+                        borderColor="border"
+                        borderRadius="lg"
+                        bg="white"
+                        p={3}
+                      >
+                        <Text fontSize="xs" color="fg.muted" mb={2}>
+                          {node.data.label}
+                        </Text>
+                        <Box position="relative">
+                          <WidgetPreview
+                            unitId={node.data.unitId}
+                            widget={node.data.widget}
+                            label={node.data.label}
+                            image={node.data.image}
+                            interactive
+                            showLabel={false}
+                            fill={false}
+                          />
+                        </Box>
+                      </Box>
+                    ))}
+                </Flex>
+              )}
+            </Box>
           ) : (
             <ReactFlow
               nodes={nodes}

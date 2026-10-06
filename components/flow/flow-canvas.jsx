@@ -931,9 +931,7 @@ export function FlowCanvas() {
     ];
     // Node bersarang (di dalam page/container) bisa dikeluarkan lagi.
     if (menu.kind === "node") {
-      const targetNode = useGraphStore
-        .getState()
-        .nodes.find((item) => item.id === menu.id);
+      const targetNode = nodes.find((item) => item.id === menu.id);
       if (targetNode?.parentId) {
         items.push({
           key: "unnest",
@@ -962,7 +960,7 @@ export function FlowCanvas() {
       },
     });
     return items;
-  }, [menu, showStatus]);
+  }, [menu, nodes, showStatus]);
 
   const portTypeLabel =
     portType === "virtual port"

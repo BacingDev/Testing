@@ -3,11 +3,13 @@
 import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Box, Button, Flex, HStack, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, HStack, IconButton, Text } from "@chakra-ui/react";
 import {
+  TbAdjustments,
   TbDeviceFloppy,
   TbDownload,
   TbHierarchy2,
+  TbLayoutSidebar,
   TbLogout,
   TbZoomScan,
 } from "react-icons/tb";
@@ -22,7 +24,7 @@ import { useFlowStore } from "@/stores/flow-store";
 import { useGraphStore } from "@/stores/graph-store";
 import BackendStatus from "@/components/layout/backend-status";
 
-export default function Navbar() {
+export default function Navbar({ onToggleLeft, onToggleRight }) {
   const zoom = useFlowStore((state) => state.zoom);
   const pathname = usePathname();
   const router = useRouter();
@@ -79,8 +81,19 @@ export default function Navbar() {
       px={{ base: 3, sm: 4 }}
       py={1.5}
     >
-      <Flex align="center" justify="space-between" gap={3}>
-        <HStack gap={4} color="fg">
+      <Flex align="center" justify="space-between" gap={2} flexWrap="wrap">
+        <HStack gap={{ base: 1, sm: 4 }} color="fg" flexWrap="wrap">
+          {onToggleLeft ? (
+            <IconButton
+              size="xs"
+              variant="ghost"
+              display={{ base: "flex", md: "none" }}
+              aria-label="Buka palette komponen"
+              onClick={onToggleLeft}
+            >
+              <TbLayoutSidebar />
+            </IconButton>
+          ) : null}
           <Link
             href="/"
             style={{ textDecoration: "none", color: "inherit" }}
@@ -154,8 +167,10 @@ export default function Navbar() {
             </HStack>
           </Link>
         </HStack>
-        <HStack gap={1.5}>
-          <BackendStatus />
+        <HStack gap={1.5} flexWrap="wrap">
+          <Box display={{ base: "none", sm: "block" }}>
+            <BackendStatus />
+          </Box>
           <HStack
             gap={1}
             px={1.5}
@@ -165,6 +180,7 @@ export default function Navbar() {
             borderColor="border"
             bg="bg.muted"
             color="fg"
+            display={{ base: "none", md: "flex" }}
           >
             <TbZoomScan size={12} />
             <Text fontSize="xs" fontWeight="semibold" tabularNums>
@@ -184,11 +200,15 @@ export default function Navbar() {
             onClick={handleSave}
           >
             <TbDeviceFloppy size={14} />
-            {saveLabel}
+            <Text as="span" display={{ base: "none", sm: "inline" }}>
+              {saveLabel}
+            </Text>
           </Button>
           <Button size="xs" variant="solid" colorPalette="gray">
             <TbDownload size={14} />
-            Ekspor
+            <Text as="span" display={{ base: "none", sm: "inline" }}>
+              Ekspor
+            </Text>
           </Button>
           <HStack gap={1}>
             {hasToken ? (
@@ -200,7 +220,9 @@ export default function Navbar() {
                 title="Keluar dan hapus sesi"
               >
                 <TbLogout size={14} />
-                Keluar
+                <Text as="span" display={{ base: "none", sm: "inline" }}>
+                  Keluar
+                </Text>
               </Button>
             ) : (
               <>
@@ -217,6 +239,17 @@ export default function Navbar() {
               </>
             )}
           </HStack>
+          {onToggleRight ? (
+            <IconButton
+              size="xs"
+              variant="ghost"
+              display={{ base: "flex", md: "none" }}
+              aria-label="Buka panel properti"
+              onClick={onToggleRight}
+            >
+              <TbAdjustments />
+            </IconButton>
+          ) : null}
         </HStack>
       </Flex>
     </Box>

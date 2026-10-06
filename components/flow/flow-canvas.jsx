@@ -1026,10 +1026,12 @@ export function FlowCanvas() {
             size={1}
             color="#cbd5e1"
           />
-          <CanvasMiniMap />
+          {/* Minimap hanya di layar cukup lebar (tidak menutup canvas HP). */}
+          <Box display={{ base: "none", md: "block" }}>
+            <CanvasMiniMap />
+          </Box>
         </ReactFlow>
       </FlowProvider>
-
       {menu ? (
         <CanvasContextMenu
           x={menu.x}

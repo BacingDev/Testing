@@ -186,7 +186,7 @@ export default function CanvasPreviewPage({ params }) {
         px={{ base: 4, md: 8 }}
         py={{ base: 6, md: 8 }}
       >
-        <HStack gap={2} mb={4}>
+        <HStack gap={2} mb={4} flexWrap="wrap">
           <Link href="/canvases" style={{ textDecoration: "none" }}>
             <Button size="xs" variant="outline">
               <TbArrowLeft size={14} />
@@ -200,7 +200,7 @@ export default function CanvasPreviewPage({ params }) {
             read-only, {nodes.length} node, {edges.length} edge
           </Text>
         </HStack>
-        <HStack gap={1} mb={4}>
+        <HStack gap={1} mb={4} flexWrap="wrap">
           <Button
             size="xs"
             variant={tab === "hasil" ? "solid" : "outline"}

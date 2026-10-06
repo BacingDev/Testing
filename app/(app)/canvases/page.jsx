@@ -212,7 +212,7 @@ export default function CanvasesPage() {
                 bg="bg.panel"
                 p={4}
               >
-                <Flex align="flex-start" justify="space-between" gap={3}>
+                <Flex align="flex-start" justify="space-between" gap={3} flexWrap="wrap">
                   <Box minWidth="0" flex="1">
                     <Text
                       fontWeight="semibold"
@@ -240,7 +240,7 @@ export default function CanvasesPage() {
                       </Text>
                     </HStack>
                   </Box>
-                  <HStack gap={1} flexShrink="0">
+                  <HStack gap={1} flexShrink="0" flexWrap="wrap">
                     <Button
                       size="xs"
                       variant="outline"

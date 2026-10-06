@@ -132,3 +132,66 @@ export function createUnitNode(unit, position) {
 }
 
 export { flowPayload };
+
+/** Unit yang bisa menampung node lain (page / container). */
+export function isContainerData(data) {
+  const unitId = data?.unitId ?? data?.componentType ?? null;
+  return unitId === "page" || unitId === "container";
+}
+
+/** Page tidak boleh masuk ke dalam wadah lain, container/widget boleh. */
+export function canNestUnit(unitId) {
+  return unitId !== "page";
+}
+
+function nodeSize(node) {
+  return {
+    width: node?.measured?.width ?? node?.width ?? 180,
+    height: node?.measured?.height ?? node?.height ?? 100,
+  };
+}
+
+/** Posisi absolut node (menjumlahkan offset semua parent). */
+export function absolutePositionOf(nodes, nodeId) {
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  let x = 0;
+  let y = 0;
+  let current = byId.get(nodeId);
+  const guard = new Set();
+  while (current && !guard.has(current.id)) {
+    guard.add(current.id);
+    x += Number(current.position?.x ?? 0);
+    y += Number(current.position?.y ?? 0);
+    current = current.parentId ? byId.get(current.parentId) : null;
+  }
+  return { x, y };
+}
+
+/**
+ * Cari wadah (page/container) paling atas yang memuat titik flow.
+ * Dipakai saat drop dari palette: menjatuhkan di dalam page/container
+ * membuat node bersarang, bukan node lepas.
+ */
+export function findContainerAt(nodes, point, excludeId = null) {
+  const hits = [];
+  for (const node of nodes) {
+    if (node.id === excludeId) continue;
+    if (!isContainerData(node.data)) continue;
+    const origin = absolutePositionOf(nodes, node.id);
+    const { width, height } = nodeSize(node);
+    if (
+      point.x >= origin.x &&
+      point.x <= origin.x + width &&
+      point.y >= origin.y &&
+      point.y <= origin.y + height
+    ) {
+      hits.push({ node, origin });
+    }
+  }
+  // Paling dalam = origin terbesar (wadah di dalam wadah didahulukan).
+  hits.sort(
+    (a, b) =>
+      b.origin.x + b.origin.y - (a.origin.x + a.origin.y),
+  );
+  return hits.length > 0 ? hits[0].node : null;
+}

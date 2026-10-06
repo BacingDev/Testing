@@ -12,7 +12,7 @@ import {
   useUpdateNodeInternals,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TbSettings2, TbTrash } from "react-icons/tb";
+import { TbArrowUp, TbSettings2, TbTrash } from "react-icons/tb";
 import { CanvasContextMenu } from "@/components/flow/canvas-context-menu";
 import { CanvasItemDialogs } from "@/components/flow/canvas-dialogs";
 import { CanvasMiniMap } from "@/components/flow/canvas-minimap";
@@ -27,7 +27,12 @@ import {
   DEFAULT_NODE_WIDTH,
   DRAG_MIME,
 } from "@/components/flow/constants";
-import { createUnitNode } from "@/data/dummy-flow";
+import {
+  absolutePositionOf,
+  canNestUnit,
+  createUnitNode,
+  findContainerAt,
+} from "@/data/dummy-flow";
 import { UNIT_CATALOG_BY_ID } from "@/data/unit-catalog";
 import { sideAndPos } from "@/lib/geometry";
 import { notify } from "@/lib/toast";
@@ -817,9 +822,31 @@ export function FlowCanvas() {
         x: event.clientX,
         y: event.clientY,
       });
-      setNodes((current) => [...current, createUnitNode(unit, position)]);
+      setNodes((current) => {
+        // Dijatuhkan di dalam page/container → bersarang di dalamnya.
+        const parent = canNestUnit(unit.id)
+          ? findContainerAt(current, position)
+          : null;
+        const node = createUnitNode(unit, position);
+        if (parent) {
+          const origin = absolutePositionOf(current, parent.id);
+          node.parentId = parent.id;
+          node.extent = "parent";
+          node.position = {
+            x: Math.max(0, Math.round(position.x - origin.x)),
+            y: Math.max(0, Math.round(position.y - origin.y)),
+          };
+          node.data.parentKey = parent.id;
+          showStatus({
+            type: "success",
+            title: `${unit.label} masuk ke ${parent.data?.label ?? "wadah"}`,
+            description: "Klik kanan node untuk mengeluarkannya lagi.",
+          });
+        }
+        return [...current, node];
+      });
     },
-    [screenToFlowPosition, setNodes],
+    [screenToFlowPosition, setNodes, showStatus],
   );
 
   const closeMenu = useCallback(() => setMenu(null), []);
@@ -890,7 +917,7 @@ export function FlowCanvas() {
   const menuItems = useMemo(() => {
     if (!menu) return [];
     const target = targetOf(menu);
-    return [
+    const items = [
       {
         key: "properties",
         label: "Properti",
@@ -901,19 +928,41 @@ export function FlowCanvas() {
           setEditing(target);
         },
       },
-      {
-        key: "delete",
-        label: "Hapus",
-        icon: TbTrash,
-        colorPalette: "red",
-        onSelect: () => {
-          setMenu(null);
-          setEditing(null);
-          setDeleting(target);
-        },
-      },
     ];
-  }, [menu]);
+    // Node bersarang (di dalam page/container) bisa dikeluarkan lagi.
+    if (menu.kind === "node") {
+      const targetNode = useGraphStore
+        .getState()
+        .nodes.find((item) => item.id === menu.id);
+      if (targetNode?.parentId) {
+        items.push({
+          key: "unnest",
+          label: "Keluarkan dari wadah",
+          icon: TbArrowUp,
+          onSelect: () => {
+            setMenu(null);
+            useGraphStore.getState().unnestNode(menu.id);
+            showStatus({
+              type: "success",
+              title: "Node dikeluarkan dari wadah",
+            });
+          },
+        });
+      }
+    }
+    items.push({
+      key: "delete",
+      label: "Hapus",
+      icon: TbTrash,
+      colorPalette: "red",
+      onSelect: () => {
+        setMenu(null);
+        setEditing(null);
+        setDeleting(target);
+      },
+    });
+    return items;
+  }, [menu, showStatus]);
 
   const portTypeLabel =
     portType === "virtual port"
@@ -969,6 +1018,7 @@ export function FlowCanvas() {
           fitViewOptions={{ padding: 0.25 }}
           defaultEdgeOptions={{ type: "waypoint" }}
           connectionLineComponent={GhostConnectionLine}
+          expandParent
         >
           <Background
             variant={BackgroundVariant.Dots}

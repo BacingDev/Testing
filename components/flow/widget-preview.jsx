@@ -53,7 +53,23 @@ export function getUnitId(data) {
   return null;
 }
 
-function Shell({ children, label, fill = true }) {
+function Shell({ children, label, fill = true, bare = false }) {
+  if (bare) {
+    return (
+      <Box
+        position={fill ? "absolute" : "relative"}
+        inset={fill ? "0" : undefined}
+        minHeight={fill ? undefined : "24px"}
+        overflow="hidden"
+        display="flex"
+        flexDirection="column"
+        alignItems="stretch"
+        justifyContent="center"
+      >
+        {children}
+      </Box>
+    );
+  }
   return (
     <Box
       position={fill ? "absolute" : "relative"}
@@ -295,6 +311,7 @@ export const WidgetPreview = memo(function WidgetPreview({
   interactive = false,
   showLabel = true,
   fill = true,
+  bare = false,
 }) {
   return (
     <Box
@@ -303,7 +320,7 @@ export const WidgetPreview = memo(function WidgetPreview({
       pointerEvents={interactive ? "auto" : "none"}
       className={interactive ? undefined : "nodrag"}
     >
-      <Shell label={showLabel ? label : null} fill={fill}>
+      <Shell label={showLabel && !bare ? label : null} fill={fill} bare={bare}>
         <WidgetBody unitId={unitId} widget={widget} label={label} image={image} />
       </Shell>
     </Box>

@@ -422,6 +422,7 @@ function UnitNodeComponent({ id, data, selected, width, height }) {
           image={data.image}
           interactive={false}
           showLabel={false}
+          bare
         />
       ) : (
         <UnitNodePreview

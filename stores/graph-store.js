@@ -583,6 +583,40 @@ export const useGraphStore = create((set) => ({
       };
     }),
 
+  /**
+   * Keluarkan node dari wadahnya (page/container) jadi node lepas.
+   * Posisi absolut dipertahankan supaya node tidak melompat.
+   */
+  unnestNode: (id) =>
+    set((state) => {
+      const byId = new Map(state.nodes.map((node) => [node.id, node]));
+      const node = byId.get(id);
+      if (!node || !node.parentId) return {};
+      let x = Number(node.position?.x ?? 0);
+      let y = Number(node.position?.y ?? 0);
+      let parent = byId.get(node.parentId);
+      const guard = new Set([id]);
+      while (parent && !guard.has(parent.id)) {
+        guard.add(parent.id);
+        x += Number(parent.position?.x ?? 0);
+        y += Number(parent.position?.y ?? 0);
+        parent = parent.parentId ? byId.get(parent.parentId) : null;
+      }
+      return {
+        nodes: state.nodes.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                parentId: undefined,
+                extent: undefined,
+                position: { ...item.position, x, y },
+                data: { ...item.data, parentKey: null },
+              }
+            : item,
+        ),
+      };
+    }),
+
   clearSelection: () =>
     set((state) => ({
       nodes: deselectAll(state.nodes),

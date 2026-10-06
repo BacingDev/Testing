@@ -9,6 +9,107 @@ import Navbar from "@/components/layout/navbar";
 import { getCanvasGraph } from "@/lib/canvas-api";
 import { WidgetPreview } from "@/components/flow/widget-preview";
 
+/** Urutan baca: atas ke bawah, kiri ke kanan. */
+function byXY(a, b) {
+  return a.position.y - b.position.y || a.position.x - b.position.x;
+}
+
+/**
+ * Render runtime bersarang: page memuat container/widget, container
+ * menyusun anaknya berjajar (flex row + wrap). Widget tampil polos —
+ * drag button ya button aja, tanpa kartu pembungkus.
+ */
+function RuntimeNode({ node, childrenOf, depth = 0, seen }) {
+  if (seen.has(node.id)) return null;
+  const nextSeen = new Set(seen);
+  nextSeen.add(node.id);
+  const kids = [...(childrenOf.get(node.id) ?? [])].sort(byXY);
+
+  if (node.data.unitId === "page") {
+    return (
+      <Box
+        bg="white"
+        borderRadius="lg"
+        borderWidth="1px"
+        borderColor="border"
+        p={4}
+      >
+        {kids.length === 0 ? (
+          <Text fontSize="sm" color="fg.muted" textAlign="center">
+            Page kosong — jatuhkan container ke dalam page di editor.
+          </Text>
+        ) : (
+          <Flex direction="column" gap={3}>
+            {kids.map((kid) => (
+              <RuntimeNode
+                key={kid.id}
+                node={kid}
+                childrenOf={childrenOf}
+                depth={depth + 1}
+                seen={nextSeen}
+              />
+            ))}
+          </Flex>
+        )}
+      </Box>
+    );
+  }
+
+  if (node.data.unitId === "container") {
+    return (
+      <Box
+        borderWidth="1px"
+        borderStyle="dashed"
+        borderColor="border"
+        borderRadius="md"
+        p={3}
+      >
+        {kids.length === 0 ? (
+          <Text fontSize="xs" color="fg.muted" textAlign="center">
+            Container kosong
+          </Text>
+        ) : (
+          <Flex direction="row" wrap="wrap" gap={2} align="center">
+            {kids.map((kid) => (
+              <RuntimeNode
+                key={kid.id}
+                node={kid}
+                childrenOf={childrenOf}
+                depth={depth + 1}
+                seen={nextSeen}
+              />
+            ))}
+          </Flex>
+        )}
+      </Box>
+    );
+  }
+
+  // Widget lepas / anak container: tampil polos apa adanya.
+  if (node.data.unitId) {
+    return (
+      <Box minWidth={node.data.unitId === "button" ? "auto" : "180px"}>
+        <WidgetPreview
+          unitId={node.data.unitId}
+          widget={node.data.widget}
+          label={node.data.label}
+          image={node.data.image}
+          interactive
+          showLabel={false}
+          fill={false}
+          bare
+        />
+      </Box>
+    );
+  }
+
+  return (
+    <Text fontSize="sm" color="fg.muted">
+      {node.data.label}
+    </Text>
+  );
+}
+
 /**
  * Pratinjau runtime ala artikel app builder: graph yang sama dibaca dari
  * server, tapi dirender tanpa chrome editor (tidak bisa drag, connect,
@@ -144,38 +245,43 @@ export default function CanvasPreviewPage({ params }) {
                   Canvas masih kosong — tambah komponen di editor lalu simpan.
                 </Text>
               ) : (
-                <Flex direction="column" gap={3} maxW="560px" mx="auto">
-                  {[...nodes]
-                    .sort(
-                      (a, b) =>
-                        a.position.y - b.position.y || a.position.x - b.position.x,
-                    )
-                    .map((node) => (
-                      <Box
-                        key={node.id}
-                        borderWidth="1px"
-                        borderColor="border"
-                        borderRadius="lg"
-                        bg="white"
-                        p={3}
-                      >
-                        <Text fontSize="xs" color="fg.muted" mb={2}>
-                          {node.data.label}
-                        </Text>
-                        <Box position="relative">
-                          <WidgetPreview
-                            unitId={node.data.unitId}
-                            widget={node.data.widget}
-                            label={node.data.label}
-                            image={node.data.image}
-                            interactive
-                            showLabel={false}
-                            fill={false}
-                          />
-                        </Box>
-                      </Box>
-                    ))}
-                </Flex>
+                (() => {
+                  const childrenOf = new Map();
+                  const knownIds = new Set(nodes.map((node) => node.id));
+                  for (const node of nodes) {
+                    const parentKey =
+                      node.data?.parentKey != null
+                        ? String(node.data.parentKey)
+                        : null;
+                    if (parentKey && parentKey !== node.id && knownIds.has(parentKey)) {
+                      if (!childrenOf.has(parentKey)) childrenOf.set(parentKey, []);
+                      childrenOf.get(parentKey).push(node);
+                    }
+                  }
+                  const roots = nodes
+                    .filter((node) => {
+                      const parentKey =
+                        node.data?.parentKey != null
+                          ? String(node.data.parentKey)
+                          : null;
+                      return (
+                        !parentKey || parentKey === node.id || !knownIds.has(parentKey)
+                      );
+                    })
+                    .sort(byXY);
+                  return (
+                    <Flex direction="column" gap={3} maxW="720px" mx="auto">
+                      {roots.map((node) => (
+                        <RuntimeNode
+                          key={node.id}
+                          node={node}
+                          childrenOf={childrenOf}
+                          seen={new Set()}
+                        />
+                      ))}
+                    </Flex>
+                  );
+                })()
               )}
             </Box>
           ) : (

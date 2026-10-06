@@ -18,13 +18,26 @@ import { memo } from "react";
 import { Box, Button, Field, Image, Input, Text } from "@chakra-ui/react";
 import { DEFAULT_NODE_IMAGE } from "@/data/dummy-flow";
 
+/**
+ * Daftar pilihan untuk field enum. Nilai yang tersimpan di JSON hanyalah
+ * string/number/array primitif supaya gampang ditulis tangan.
+ */
+export const WIDGET_ENUMS = {
+  colors: ["blue", "green", "red", "orange", "purple", "gray"],
+  buttonVariants: ["solid", "outline", "ghost"],
+  buttonSizes: ["xs", "sm", "md"],
+  textSizes: ["xs", "sm", "md", "lg", "xl"],
+  aligns: ["left", "center", "right"],
+  directions: ["row", "column"],
+};
+
 /** Isi default widget tiap unit katalog (dipakai saat node baru di-drop). */
 export const WIDGET_DEFAULTS = {
-  button: { text: "Klik saya" },
-  text: { text: "Teks contoh — ubah lewat Properti" },
+  button: { text: "Klik saya", color: "blue", variant: "solid", size: "xs" },
+  text: { text: "Teks contoh — ubah lewat Properti", size: "sm", align: "left", bold: false },
   "text-input": { label: "Nama", placeholder: "Ketik di sini…" },
   select: { label: "Pilihan", options: ["Opsi 1", "Opsi 2", "Opsi 3"] },
-  header: { text: "Judul Aplikasi" },
+  header: { text: "Judul Aplikasi", subtitle: "" },
   table: {
     title: "Data",
     columns: ["Nama", "Nilai"],
@@ -36,8 +49,8 @@ export const WIDGET_DEFAULTS = {
   chart: { title: "Grafik", values: [35, 65, 45, 80, 55] },
   form: { title: "Formulir", submitText: "Kirim" },
   page: { text: "Halaman" },
-  container: { text: "Kontainer" },
-  image: {},
+  container: { text: "Kontainer", direction: "row" },
+  image: { alt: "" },
 };
 
 /**
@@ -107,13 +120,24 @@ function WidgetBody({ unitId, widget, label, image }) {
   switch (unitId) {
     case "button":
       return (
-        <Button size="xs" colorPalette="blue" width="100%">
+        <Button
+          size={widget?.size || "xs"}
+          variant={widget?.variant || "solid"}
+          colorPalette={widget?.color || "blue"}
+          width="100%"
+        >
           {widget?.text || label || "Button"}
         </Button>
       );
     case "text":
       return (
-        <Text fontSize="sm" fontWeight="medium" noOfLines={3}>
+        <Text
+          fontSize={widget?.size || "sm"}
+          fontWeight={widget?.bold ? "bold" : "medium"}
+          textAlign={widget?.align || "left"}
+          noOfLines={3}
+          width="100%"
+        >
           {widget?.text || label || "Text"}
         </Text>
       );
@@ -170,6 +194,11 @@ function WidgetBody({ unitId, widget, label, image }) {
           <Text fontSize="sm" fontWeight="bold" color="white" noOfLines={1}>
             {widget?.text || label || "Header"}
           </Text>
+          {widget?.subtitle ? (
+            <Text fontSize="10px" color="whiteAlpha.800" noOfLines={1}>
+              {widget.subtitle}
+            </Text>
+          ) : null}
         </Box>
       );
     case "table": {
@@ -177,7 +206,7 @@ function WidgetBody({ unitId, widget, label, image }) {
         Array.isArray(widget?.columns) && widget.columns.length > 0
           ? widget.columns
           : ["Kolom"];
-      const rows = Array.isArray(widget?.rows) ? widget.rows.slice(0, 3) : [];
+      const rows = Array.isArray(widget?.rows) ? widget.rows : [];
       return (
         <>
           <Text fontSize="10px" fontWeight="semibold" noOfLines={1}>
@@ -281,14 +310,21 @@ function WidgetBody({ unitId, widget, label, image }) {
       );
     case "image":
       return (
-        <Image
-          src={image || DEFAULT_NODE_IMAGE}
-          alt={label || "Image"}
-          width="full"
-          height="64px"
-          objectFit="contain"
-          draggable={false}
-        />
+        <>
+          <Image
+            src={image || DEFAULT_NODE_IMAGE}
+            alt={widget?.alt || label || "Image"}
+            width="full"
+            height="64px"
+            objectFit="contain"
+            draggable={false}
+          />
+          {widget?.alt ? (
+            <Text fontSize="9px" color="fg.muted" textAlign="center" noOfLines={1}>
+              {widget.alt}
+            </Text>
+          ) : null}
+        </>
       );
     default:
       return (
@@ -330,6 +366,8 @@ export const WidgetPreview = memo(function WidgetPreview({
 /**
  * Form edit isi widget untuk dialog Properti node.
  * onChange dipanggil dengan object widget baru tiap field berubah.
+ * Semua nilai yang disimpan adalah JSON primitif (string/number/array)
+ * sehingga bisa ditulis tangan langsung sebagai JSON.
  */
 export function WidgetFields({ unitId, widget, onChange }) {
   const value = widget ?? {};
@@ -347,16 +385,81 @@ export function WidgetFields({ unitId, widget, onChange }) {
     </Field.Root>
   );
 
+  const enumField = (fieldKey, fieldLabel, options) => (
+    <Field.Root key={fieldKey}>
+      <Field.Label>{fieldLabel}</Field.Label>
+      <select
+        value={value[fieldKey] ?? options[0]}
+        onChange={(event) => set({ [fieldKey]: event.target.value })}
+        style={{
+          fontSize: 13,
+          padding: "6px 8px",
+          borderRadius: 6,
+          border: "1px solid #cbd5e1",
+          background: "white",
+          width: "100%",
+        }}
+      >
+        {options.map((opt) => (
+          <option key={String(opt)} value={String(opt)}>
+            {String(opt)}
+          </option>
+        ))}
+      </select>
+    </Field.Root>
+  );
+
+  const boolField = (fieldKey, fieldLabel) => (
+    <label
+      key={fieldKey}
+      style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}
+    >
+      <input
+        type="checkbox"
+        checked={!!value[fieldKey]}
+        onChange={(event) => set({ [fieldKey]: event.target.checked })}
+      />
+      {fieldLabel}
+    </label>
+  );
+
   switch (unitId) {
     case "button":
-      return textField("text", "Tulisan button", "Klik saya");
+      return (
+        <>
+          {textField("text", "Tulisan button", "Klik saya")}
+          {enumField("color", "Warna", WIDGET_ENUMS.colors)}
+          {enumField("variant", "Gaya", WIDGET_ENUMS.buttonVariants)}
+          {enumField("size", "Ukuran", WIDGET_ENUMS.buttonSizes)}
+        </>
+      );
     case "text":
-      return textField("text", "Isi teks", "Tulis sesuatu…");
+      return (
+        <>
+          {textField("text", "Isi teks", "Tulis sesuatu…")}
+          {enumField("size", "Ukuran huruf", WIDGET_ENUMS.textSizes)}
+          {enumField("align", "Rata", WIDGET_ENUMS.aligns)}
+          {boolField("bold", "Tebal (bold)")}
+        </>
+      );
     case "header":
-      return textField("text", "Judul header", "Judul Aplikasi");
+      return (
+        <>
+          {textField("text", "Judul header", "Judul Aplikasi")}
+          {textField("subtitle", "Subjudul (opsional)", "")}
+        </>
+      );
     case "page":
+      return textField("text", "Nama halaman", "Halaman");
     case "container":
-      return textField("text", "Keterangan", "");
+      return (
+        <>
+          {textField("text", "Keterangan", "Kontainer")}
+          {enumField("direction", "Susun anak", WIDGET_ENUMS.directions)}
+        </>
+      );
+    case "image":
+      return textField("alt", "Teks alt/caption", "");
     case "text-input":
       return (
         <>
@@ -387,9 +490,78 @@ export function WidgetFields({ unitId, widget, onChange }) {
         </>
       );
     case "table":
-      return textField("title", "Judul tabel", "Data");
+      return (
+        <>
+          {textField("title", "Judul tabel", "Data")}
+          <Field.Root>
+            <Field.Label>Kolom (pisahkan koma)</Field.Label>
+            <Input
+              size="sm"
+              value={Array.isArray(value.columns) ? value.columns.join(", ") : ""}
+              placeholder="Nama, Nilai"
+              onChange={(event) =>
+                set({
+                  columns: event.target.value
+                    .split(",")
+                    .map((part) => part.trim())
+                    .filter(Boolean),
+                })
+              }
+            />
+          </Field.Root>
+          <Field.Root>
+            <Field.Label>Baris (satu baris per baris, sel pisah | )</Field.Label>
+            <textarea
+              rows={3}
+              value={
+                Array.isArray(value.rows)
+                  ? value.rows.map((row) => (row ?? []).join(" | ")).join("\n")
+                  : ""
+              }
+              placeholder={"Contoh A | 10\nContoh B | 20"}
+              onChange={(event) =>
+                set({
+                  rows: event.target.value
+                    .split("\n")
+                    .map((line) => line.split("|").map((cell) => cell.trim()))
+                    .filter((cells) => cells.some((cell) => cell !== "")),
+                })
+              }
+              style={{
+                fontSize: 13,
+                padding: "6px 8px",
+                borderRadius: 6,
+                border: "1px solid #cbd5e1",
+                background: "white",
+                width: "100%",
+                fontFamily: "inherit",
+              }}
+            />
+          </Field.Root>
+        </>
+      );
     case "chart":
-      return textField("title", "Judul grafik", "Grafik");
+      return (
+        <>
+          {textField("title", "Judul grafik", "Grafik")}
+          <Field.Root>
+            <Field.Label>Nilai (pisahkan koma)</Field.Label>
+            <Input
+              size="sm"
+              value={Array.isArray(value.values) ? value.values.join(", ") : ""}
+              placeholder="35, 65, 45"
+              onChange={(event) =>
+                set({
+                  values: event.target.value
+                    .split(",")
+                    .map((part) => Number(part.trim()))
+                    .filter((num) => Number.isFinite(num)),
+                })
+              }
+            />
+          </Field.Root>
+        </>
+      );
     case "form":
       return (
         <>

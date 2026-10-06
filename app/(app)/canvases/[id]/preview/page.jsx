@@ -69,8 +69,12 @@ function RuntimeNode({ node, childrenOf, depth = 0, seen }) {
             Container kosong
           </Text>
         ) : (
-          <Flex direction="row" wrap="wrap" gap={2} align="center">
-            {kids.map((kid) => (
+          <Flex
+            direction={node.data.widget?.direction === "column" ? "column" : "row"}
+            wrap={node.data.widget?.direction === "column" ? "nowrap" : "wrap"}
+            gap={2}
+            align={node.data.widget?.direction === "column" ? "stretch" : "center"}
+          >            {kids.map((kid) => (
               <RuntimeNode
                 key={kid.id}
                 node={kid}

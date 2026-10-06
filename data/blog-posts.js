@@ -1539,6 +1539,202 @@ const users = await res.json();`,
       },
     ],
   },
+  {
+    slug: "sinkronisasi-canvas-app-builder-fe-be",
+    title: "Sinkronisasi Canvas App Builder: Kontrak FE dan BE yang Sudah Jalan",
+    excerpt:
+      "Catatan sinkron canvas drag-n-drop: endpoint BE, mapping payload FE, routing nginx, auth JWKS, validasi graph, dan alur simpan-muat-preview yang sudah terverifikasi healthy.",
+    category: "Arsitektur",
+    publishedAt: "2026-10-06",
+    readTime: "10 menit",
+    icon: "layout",
+    colorPalette: "purple",
+    sections: [
+      {
+        id: "ringkasan",
+        title: "1. Status sinkron saat ini",
+        blocks: [
+          {
+            type: "paragraph",
+            content:
+              "BE canvas (port 8003) dan FE sudah sinkron dan healthy. BE melayani /v1/canvases di produksi, FE memanggil /api/canvas/v1/canvases lewat nginx yang memangkas prefix /api/canvas/. Editor tetap local-first (autosave localStorage), server dipakai eksplisit saat Simpan/Muat di halaman /canvases.",
+          },
+          {
+            type: "table",
+            columns: ["Lapisan", "Kondisi"],
+            rows: [
+              ["BE canvas :8003", "Up healthy, openapi /v1/canvases"],
+              ["FE /api/canvas/*", "Mapping payload cocok dengan BE"],
+              ["Nginx /api/canvas/", "Strip prefix ke :8003, sudah ada bloknya"],
+              ["Auth", "Bearer RS256 aud=canvas via JWKS user-management"],
+            ],
+          },
+        ],
+      },
+      {
+        id: "kontrak-be",
+        title: "2. Kontrak API BE (canvas)",
+        blocks: [
+          {
+            type: "paragraph",
+            content:
+              "Semua endpoint kecuali /health butuh Authorization Bearer dari user-management. Ownership dicek via owner_id=sub, canvas orang lain dibalas 404 (bukan 403).",
+          },
+          {
+            type: "table",
+            columns: ["Method", "Path produksi", "Fungsi"],
+            rows: [
+              ["GET", "/v1/canvases?skip=0&limit=50", "List milik sendiri"],
+              ["POST", "/v1/canvases", "Buat canvas, balas 201 + node/edge 0"],
+              ["GET", "/v1/canvases/{id}", "Detail + hitungan node/edge"],
+              ["PATCH", "/v1/canvases/{id}", "Ubah nama/deskripsi"],
+              ["DELETE", "/v1/canvases/{id}", "Hapus, balas 204"],
+              ["GET", "/v1/canvases/{id}/graph", "Baca graph"],
+              ["PUT", "/v1/canvases/{id}/graph", "Ganti graph satu transaksi"],
+            ],
+          },
+          {
+            type: "code",
+            language: "json",
+            content: `POST /v1/canvases
+{"name": "Landing v1", "description": "hero + pricing"}
+
+PUT /v1/canvases/1/graph
+{
+  "nodes": [
+    {"key": "n1", "type": "workflow", "position": {"x": 10, "y": 20, "w": 200, "h": 140},
+     "data": {"label": "Hero", "ports": [{"idpfport": "p-out", "type": "port"}]}}
+  ],
+  "edges": [
+    {"key": "e1", "source": "n1", "target": "n2",
+     "source_handle": "p-out", "target_handle": "p-in"}
+  ]
+}`,
+          },
+          {
+            type: "list",
+            items: [
+              "key = id stabil React Flow, save idempotent.",
+              "position opaque, FE melipat w/h ke dalamnya.",
+              "data.ports diringkas ke tabel canvas_ports untuk validasi.",
+              "PUT validasi dulu baru hapus-tulis-commit sekali.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "mapping-fe",
+        title: "3. Mapping FE (lib/canvas-api.js)",
+        blocks: [
+          {
+            type: "paragraph",
+            content:
+              "FE tidak mengirim state React Flow mentah. Ada dua fungsi konversi yang harus dijaga berpasangan: toNodePayload/toEdgePayload saat save, toEditorGraph saat load.",
+          },
+          {
+            type: "code",
+            language: "javascript",
+            content: `const BASE_URL = "/api/canvas/v1/canvases";
+listCanvases(); // GET BASE_URL
+createCanvas({name}); // POST BASE_URL
+saveCanvasGraph(id, {nodes, edges}); // PUT BASE_URL/id/graph
+getCanvasGraph(id); // GET BASE_URL/id/graph
+deleteCanvas(id); // DELETE BASE_URL/id`,
+          },
+          {
+            type: "list",
+            items: [
+              "toNodePayload: id jadi key, width/height dilipat ke position.w/h.",
+              "toEdgePayload: sourceHandle jadi source_handle (snake_case).",
+              "toEditorGraph: kebalikannya, w/h dikeluarkan lagi ke width/height.",
+              "401 otomatis clearAuth + redirect /auth/login.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "routing-auth",
+        title: "4. Routing nginx dan auth",
+        blocks: [
+          {
+            type: "code",
+            language: "text",
+            content: `FE /api/canvas/v1/canvases
+-> nginx location /api/canvas/ proxy_pass 127.0.0.1:8003/
+-> BE /v1/canvases (CANVAS_API_V1_PREFIX=/v1 di produksi)`,
+          },
+          {
+            type: "list",
+            items: [
+              "Dev lokal tanpa gateway pakai /api/v1 (default kode).",
+              "Produksi wajib /v1 karena gateway sudah memangkas.",
+              "Token RS256: iss=user-management, aud wajib memuat canvas.",
+              "JWT_AUDIENCES di BE harus mencakup canvas, kalau tidak semua request 401.",
+            ],
+          },
+          {
+            type: "callout",
+            title: "Jangan baca .env produksi dari repo",
+            content:
+              "Nilai database dan secret hanya ada di server/VPS. Repo hanya memegang contoh (.env.example) dan kode. Kalau 401 massal, cek aud token dan JWKS user-management dulu.",
+          },
+        ],
+      },
+      {
+        id: "validasi",
+        title: "5. Validasi graph (422)",
+        blocks: [
+          {
+            type: "list",
+            items: [
+              "Maksimal node/edge (default 2000/4000).",
+              "Key node/edge duplikat ditolak.",
+              "Edge ke node di luar canvas ditolak.",
+              "Self-loop (source == target) ditolak.",
+              "Handle harus regular port (type port), bukan virtual/exposed.",
+            ],
+          },
+          {
+            type: "paragraph",
+            content:
+              "FE sudah mencegah self-loop dan VP/EP di isValidConnection, tapi BE tetap validasi ulang. Jangan hapus validasi BE demi kemudahan FE.",
+          },
+        ],
+      },
+      {
+        id: "alur-pakai",
+        title: "6. Alur pakai yang didukung",
+        blocks: [
+          {
+            type: "steps",
+            items: [
+              "Susun di editor (/): drag dari palette, connect, atur properties, autosave lokal tiap 1,2 detik.",
+              "Buka /canvases, beri nama, Simpan ke server (create + PUT graph).",
+              "Muat kembali: klik Muat di list, store di-hydrate lalu kembali ke editor.",
+              "Intip tanpa mengotori editor: Preview read-only di /canvases/{id}/preview.",
+              "Hapus bila perlu: konfirmasi lalu DELETE, list di-refresh.",
+            ],
+          },
+        ],
+      },
+      {
+        id: "troubleshoot",
+        title: "7. Troubleshooting cepat",
+        blocks: [
+          {
+            type: "table",
+            columns: ["Gejala", "Cek"],
+            rows: [
+              ["404 di /v1/*", "CANVAS_API_V1_PREFIX belum /v1 di produksi"],
+              ["401 semua request", "aud token belum memuat canvas / JWKS IDP mati"],
+              ["422 source handle", "Port belum tersimpan di data.ports atau bertipe VP/EP"],
+              ["Data lama muncul lagi", "Lupa hydrate setelah load: editor masih baca localStorage"],
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 export function getBlogPost(slug) {

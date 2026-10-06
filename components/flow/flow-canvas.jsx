@@ -93,6 +93,7 @@ export function FlowCanvas() {
   const setNodes = useGraphStore((state) => state.setNodes);
   const setEdges = useGraphStore((state) => state.setEdges);
   const clearPorts = useGraphStore((state) => state.clearPorts);
+  const unnestNode = useGraphStore((state) => state.unnestNode);
   const selectNode = useGraphStore((state) => state.selectNode);
   const selectEdge = useGraphStore((state) => state.selectEdge);
   const selectPort = useGraphStore((state) => state.selectPort);
@@ -939,7 +940,7 @@ export function FlowCanvas() {
           icon: TbArrowUp,
           onSelect: () => {
             setMenu(null);
-            useGraphStore.getState().unnestNode(menu.id);
+            unnestNode(menu.id);
             showStatus({
               type: "success",
               title: "Node dikeluarkan dari wadah",
@@ -960,7 +961,7 @@ export function FlowCanvas() {
       },
     });
     return items;
-  }, [menu, nodes, showStatus]);
+  }, [menu, nodes, showStatus, unnestNode]);
 
   const portTypeLabel =
     portType === "virtual port"

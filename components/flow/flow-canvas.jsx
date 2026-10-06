@@ -918,7 +918,11 @@ export function FlowCanvas() {
   const menuItems = useMemo(() => {
     if (!menu) return [];
     const target = targetOf(menu);
-    const items = [
+    // Node bersarang (di dalam page/container) bisa dikeluarkan lagi.
+    const nested =
+      menu.kind === "node" &&
+      nodes.some((item) => item.id === menu.id && item.parentId);
+    return [
       {
         key: "properties",
         label: "Properti",
@@ -929,38 +933,35 @@ export function FlowCanvas() {
           setEditing(target);
         },
       },
-    ];
-    // Node bersarang (di dalam page/container) bisa dikeluarkan lagi.
-    if (menu.kind === "node") {
-      const targetNode = nodes.find((item) => item.id === menu.id);
-      if (targetNode?.parentId) {
-        items.push({
-          key: "unnest",
-          label: "Keluarkan dari wadah",
-          icon: TbArrowUp,
-          onSelect: () => {
-            setMenu(null);
-            unnestNode(menu.id);
-            showStatus({
-              type: "success",
-              title: "Node dikeluarkan dari wadah",
-            });
-          },
-        });
-      }
-    }
-    items.push({
-      key: "delete",
-      label: "Hapus",
-      icon: TbTrash,
-      colorPalette: "red",
-      onSelect: () => {
-        setMenu(null);
-        setEditing(null);
-        setDeleting(target);
+      ...(nested
+        ? [
+            {
+              key: "unnest",
+              label: "Keluarkan dari wadah",
+              icon: TbArrowUp,
+              onSelect: () => {
+                setMenu(null);
+                unnestNode(menu.id);
+                showStatus({
+                  type: "success",
+                  title: "Node dikeluarkan dari wadah",
+                });
+              },
+            },
+          ]
+        : []),
+      {
+        key: "delete",
+        label: "Hapus",
+        icon: TbTrash,
+        colorPalette: "red",
+        onSelect: () => {
+          setMenu(null);
+          setEditing(null);
+          setDeleting(target);
+        },
       },
-    });
-    return items;
+    ];
   }, [menu, nodes, showStatus, unnestNode]);
 
   const portTypeLabel =

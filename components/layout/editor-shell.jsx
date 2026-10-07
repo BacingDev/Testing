@@ -148,7 +148,8 @@ export default function EditorShell() {
             title="Komponen"
             onClose={() => setLeftOpen(false)}
           >
-            <LeftSidebar />
+            {/* Mulai drag = panel ditutup supaya canvas bisa di-drop. */}
+            <LeftSidebar onItemDragStart={() => setLeftOpen(false)} />
           </MobilePanel>
         ) : null}
         {rightOpen ? (

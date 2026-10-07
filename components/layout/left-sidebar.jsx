@@ -68,7 +68,7 @@ const TOOL_ITEMS = [
   },
 ];
 
-function ComponentItem({ unit }) {
+function ComponentItem({ unit, onDragStart }) {
   return (
     <Box>
       <Button
@@ -84,6 +84,10 @@ function ComponentItem({ unit }) {
         onDragStart={(event) => {
           event.dataTransfer.setData(DRAG_MIME, unit.id);
           event.dataTransfer.effectAllowed = "move";
+          // Mobile: panel overlay langsung ditutup supaya canvas kelihatan
+          // dan bisa di-drop. Drag yang sudah mulai tetap jalan karena
+          // dataTransfer sudah diisi sebelum panel di-unmount.
+          onDragStart?.();
         }}
         title={`Drag ke canvas: ${unit.name}`}
       >
@@ -105,7 +109,7 @@ function ComponentItem({ unit }) {
   );
 }
 
-export default function LeftSidebar() {
+export default function LeftSidebar({ onItemDragStart }) {
   const showPorts = useFlowStore((state) => state.showPorts);
   const setShowPorts = useFlowStore((state) => state.setShowPorts);
   const tool = useFlowStore((state) => state.tool);
@@ -181,7 +185,7 @@ export default function LeftSidebar() {
                 </HStack>
                 <Flex direction="column" gap={1.5} pb={3}>
                   {getUnitsByCategory(category.key).map((unit) => (
-                    <ComponentItem key={unit.id} unit={unit} />
+                    <ComponentItem key={unit.id} unit={unit} onDragStart={onItemDragStart} />
                   ))}
                 </Flex>
                 <Separator />

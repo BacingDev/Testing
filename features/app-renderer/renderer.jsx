@@ -134,7 +134,7 @@ export function AppRenderer({ definition, path, pageId, basePath = "", onNavigat
       dataSource
         .loadTable(name)
         .then((rows) => {
-          if (active) setTables((prev) => ({ ...prev, [name]: rows ?? [] })));
+          if (active) setTables((prev) => ({ ...prev, [name]: rows ?? [] }));
         })
         .catch(() => {
           if (active) setTables((prev) => ({ ...prev, [name]: [] }));

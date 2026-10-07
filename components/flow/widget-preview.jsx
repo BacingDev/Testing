@@ -51,6 +51,68 @@ export const WIDGET_DEFAULTS = {
   page: { text: "Halaman" },
   container: { text: "Kontainer", direction: "row" },
   image: { alt: "" },
+  // --- section landing (di-render full-page oleh /landing/[id]) ---
+  hero: {
+    eyebrow: "Format 01 — Landing Page",
+    title: "Susun landing page di canvas",
+    subtitle: "Tiap section adalah komponen sidebar yang bisa di-drag ke canvas.",
+    ctaPrimary: "Mulai gratis",
+    ctaSecondary: "Lihat contoh",
+  },
+  "logo-strip": {
+    title: "DIPERCAYA TIM YANG MEMBANGUN DENGAN CANVAS",
+    logos: "Nusantara Co, Kirana, BacingDev, Sagara, Lentera",
+  },
+  "features-grid": {
+    title: "Semua yang perlu untuk page builder",
+    subtitle: "Enam kemampuan inti.",
+    items: [
+      "Drag & drop canvas | Susun page, container, dan form langsung di canvas.",
+      "Node, edge & port | Relasi antar komponen divisualkan sebagai graph.",
+      "Preview runtime | Lihat hasil akhir read-only seperti user melihatnya.",
+    ].join("\n"),
+  },
+  "how-it-works": {
+    title: "Dari kanvas kosong ke landing live",
+    steps: [
+      "Drag komponen | Pilih section dari sidebar lalu jatuhkan ke canvas.",
+      "Hubungkan alur | Tarik edge antar node sesuai kebutuhan data.",
+      "Preview & publish | Buka sebagai halaman, cek tampilan, lalu simpan.",
+    ].join("\n"),
+  },
+  testimonial: {
+    title: "Kata mereka yang sudah coba",
+    quotes: [
+      "Bikin struktur landing jadi kelihatan. | Anisa P. | Product Designer",
+      "Preview read-only-nya ngebantu stakeholder. | Bagas R. | Frontend Dev",
+    ].join("\n"),
+  },
+  pricing: {
+    title: "Mulai gratis, naik saat siap",
+    subtitle: "",
+    plans: [
+      "Hobi | Rp0 | / selamanya | 3 canvas; Komponen dasar; Preview read-only",
+      "*Pro | Rp99rb | / bulan | Canvas tanpa batas; Simpan ke server; Ekspor production",
+      "Tim | Rp249rb | / bulan | Semua di Pro; Workspace tim; SSO (segera)",
+    ].join("\n"),
+  },
+  "cta-banner": {
+    title: "Siap susun landing pertamamu?",
+    subtitle: "Buka editor, drag section Hero ke canvas, tekan preview.",
+    ctaPrimary: "Mulai di Editor",
+    ctaSecondary: "Baca Blog dulu",
+  },
+  footer: {
+    brand: "Workflow Studio",
+    links: "Editor, Blog, List, Canvas",
+    copyright: "© 2026 — dibuat dari canvas",
+  },
+  stats: {
+    title: "Angka bicara",
+    items: ["120+ | Canvas tersimpan", "9 | Section siap drag", "4 mnt | Deploy otomatis"].join(
+      "\n",
+    ),
+  },
 };
 
 /**
@@ -326,6 +388,68 @@ function WidgetBody({ unitId, widget, label, image }) {
           ) : null}
         </>
       );
+    case "hero":
+    case "cta-banner":
+      return (
+        <>
+          <Text fontSize="10px" fontWeight="bold" noOfLines={2}>
+            {widget?.title || label || "Hero"}
+          </Text>
+          {widget?.subtitle ? (
+            <Text fontSize="9px" color="fg.muted" noOfLines={2}>
+              {widget.subtitle}
+            </Text>
+          ) : null}
+          <Button size="xs" colorPalette="blue" width="100%">
+            {widget?.ctaPrimary || "CTA"}
+          </Button>
+        </>
+      );
+    case "logo-strip":
+    case "stats": {
+      const items =
+        unitId === "logo-strip"
+          ? String(widget?.logos ?? "")
+              .split(",")
+              .map((part) => part.trim())
+              .filter(Boolean)
+          : String(widget?.items ?? "")
+              .split("\n")
+              .map((line) => line.trim())
+              .filter(Boolean);
+      return (
+        <>
+          <Text fontSize="10px" fontWeight="semibold" noOfLines={1}>
+            {widget?.title || label || unitId}
+          </Text>
+          <Text fontSize="9px" color="fg.muted" noOfLines={2}>
+            {items.slice(0, 3).join(" • ") || "—"}
+          </Text>
+        </>
+      );
+    }
+    case "features-grid":
+    case "how-it-works":
+    case "testimonial":
+    case "pricing":
+    case "footer": {
+      const raw =
+        widget?.items ?? widget?.steps ?? widget?.quotes ?? widget?.plans ?? widget?.links ?? "";
+      const count = String(raw)
+        .split(unitId === "footer" ? "," : "\n")
+        .map((part) => part.trim())
+        .filter(Boolean).length;
+      return (
+        <>
+          <Text fontSize="10px" fontWeight="semibold" noOfLines={2}>
+            {widget?.title || widget?.brand || label || unitId}
+          </Text>
+          <Text fontSize="9px" color="fg.muted">
+            {count} item
+          </Text>
+        </>
+      );
+    }
     default:
       return (
         <Text fontSize="xs" color="fg.muted">
@@ -421,6 +545,27 @@ export function WidgetFields({ unitId, widget, onChange }) {
       />
       {fieldLabel}
     </label>
+  );
+
+  const areaField = (fieldKey, fieldLabel, placeholder, rows = 3) => (
+    <Field.Root key={fieldKey}>
+      <Field.Label>{fieldLabel}</Field.Label>
+      <textarea
+        rows={rows}
+        value={value[fieldKey] ?? ""}
+        placeholder={placeholder}
+        onChange={(event) => set({ [fieldKey]: event.target.value })}
+        style={{
+          fontSize: 13,
+          padding: "6px 8px",
+          borderRadius: 6,
+          border: "1px solid #cbd5e1",
+          background: "white",
+          width: "100%",
+          fontFamily: "inherit",
+        }}
+      />
+    </Field.Root>
   );
 
   switch (unitId) {
@@ -567,6 +712,97 @@ export function WidgetFields({ unitId, widget, onChange }) {
         <>
           {textField("title", "Judul form", "Formulir")}
           {textField("submitText", "Tulisan tombol", "Kirim")}
+        </>
+      );
+    case "hero":
+      return (
+        <>
+          {textField("eyebrow", "Label kecil", "Format 01 — Landing Page")}
+          {textField("title", "Judul besar", "Susun landing page di canvas")}
+          {areaField("subtitle", "Subjudul", "Tulis deskripsi singkat…")}
+          {textField("ctaPrimary", "Tombol utama", "Mulai gratis")}
+          {textField("ctaSecondary", "Tombol kedua", "Lihat contoh")}
+        </>
+      );
+    case "logo-strip":
+      return (
+        <>
+          {textField("title", "Judul strip", "DIPERCAYA TIM…")}
+          {textField("logos", "Logo (pisahkan koma)", "Acar, BacingDev, Kirana")}
+        </>
+      );
+    case "features-grid":
+      return (
+        <>
+          {textField("title", "Judul", "Semua yang perlu…")}
+          {textField("subtitle", "Subjudul", "")}
+          {areaField(
+            "items",
+            "Fitur (satu per baris: Judul | Deskripsi)",
+            "Drag & drop | Susun langsung di canvas",
+            4,
+          )}
+        </>
+      );
+    case "how-it-works":
+      return (
+        <>
+          {textField("title", "Judul", "Dari kanvas kosong…")}
+          {areaField(
+            "steps",
+            "Langkah (satu per baris: Judul | Deskripsi)",
+            "Drag komponen | Pilih lalu jatuhkan",
+            4,
+          )}
+        </>
+      );
+    case "testimonial":
+      return (
+        <>
+          {textField("title", "Judul", "Kata mereka…")}
+          {areaField(
+            "quotes",
+            "Testimoni (satu per baris: Kutipan | Nama | Peran)",
+            "Bagus sekali | Anisa | Designer",
+            4,
+          )}
+        </>
+      );
+    case "pricing":
+      return (
+        <>
+          {textField("title", "Judul", "Mulai gratis…")}
+          {textField("subtitle", "Subjudul", "")}
+          {areaField(
+            "plans",
+            "Paket (satu per baris: Nama | Harga | Periode | fitur a; fitur b, awali * untuk populer)",
+            "*Pro | Rp99rb | / bulan | Canvas tanpa batas; Support",
+            4,
+          )}
+        </>
+      );
+    case "cta-banner":
+      return (
+        <>
+          {textField("title", "Judul", "Siap susun landing pertamamu?")}
+          {textField("subtitle", "Subjudul", "")}
+          {textField("ctaPrimary", "Tombol utama", "Mulai di Editor")}
+          {textField("ctaSecondary", "Tombol kedua", "Baca Blog dulu")}
+        </>
+      );
+    case "footer":
+      return (
+        <>
+          {textField("brand", "Nama brand", "Workflow Studio")}
+          {textField("links", "Tautan (pisahkan koma)", "Editor, Blog, List, Canvas")}
+          {textField("copyright", "Copyright", "© 2026 — dibuat dari canvas")}
+        </>
+      );
+    case "stats":
+      return (
+        <>
+          {textField("title", "Judul", "Angka bicara")}
+          {areaField("items", "Statistik (satu per baris: Angka | Label)", "120+ | Canvas", 3)}
         </>
       );
     default:

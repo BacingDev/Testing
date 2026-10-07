@@ -261,6 +261,17 @@ export default function CanvasesPage() {
                         Preview
                       </Button>
                     </Link>
+                    <Link href={`/landing/${canvas.id}`} style={{ textDecoration: "none" }}>
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        colorPalette="orange"
+                        title="Buka sebagai halaman landing"
+                      >
+                        <TbEye size={14} />
+                        Halaman
+                      </Button>
+                    </Link>
                     <Button
                       size="xs"
                       variant="outline"

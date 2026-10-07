@@ -22,6 +22,7 @@ import {
   TbStar,
 } from "react-icons/tb";
 import Navbar from "@/components/layout/navbar";
+import SavedCanvasList from "@/components/landing/saved-list";
 
 export const metadata = {
   title: "Landing — Workflow Studio",
@@ -276,6 +277,19 @@ export default function LandingPage() {
             </HStack>
           </Box>
         </Flex>
+
+        {/* ── DARI CANVAS TERSIMPAN ─────────────────────────── */}
+        <Box mb={{ base: 10, md: 16 }}>
+          <SectionBadge>Dari canvas tersimpan</SectionBadge>
+          <Text as="h2" mt={3} fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold">
+            Halaman hasil editanmu
+          </Text>
+          <Text mt={2} color="fg.muted" maxW="640px" mb={5}>
+            Susun section di editor, simpan ke server, lalu buka sebagai
+            halaman. Urutan section mengikuti posisi atas-bawah node di canvas.
+          </Text>
+          <SavedCanvasList />
+        </Box>
 
         {/* ── LOGO STRIP ───────────────────────────────────── */}
         <Box

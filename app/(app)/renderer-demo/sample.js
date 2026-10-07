@@ -1,0 +1,80 @@
+export const demoDefinition = {
+  version: 1,
+  name: "toko-kopi",
+  pages: [
+    {
+      id: "p1",
+      path: "/",
+      title: "Home",
+      components: [
+        {
+          id: "c-heading",
+          type: "Heading",
+          props: { text: "Toko Kopi", level: 1, align: "center" },
+          style: {},
+          children: [],
+          events: {},
+        },
+        {
+          id: "c-hero",
+          type: "Container",
+          props: { direction: "column", gap: 2 },
+          style: { bg: "orange-50", radius: "lg", p: 6, align: "center" },
+          children: [
+            {
+              id: "c-hero-text",
+              type: "Text",
+              props: { text: "Kopi terbaik, diseduh dengan teliti.", size: "lg", align: "center" },
+              style: {},
+              children: [],
+              events: {},
+            },
+            {
+              id: "c1",
+              type: "Button",
+              props: { label: "Beli" },
+              style: { bg: "blue-600", radius: "md" },
+              children: [],
+              events: { onClick: { action: "navigate", to: "/checkout" } },
+            },
+          ],
+          events: {},
+        },
+        {
+          id: "c-menu",
+          type: "Card",
+          props: { title: "Menu hari ini" },
+          style: {},
+          children: [
+            {
+              id: "c-menu-list",
+              type: "List",
+              props: { items: ["Espresso", "Latte", "Cappuccino"] },
+              style: {},
+              children: [],
+              events: {},
+            },
+          ],
+          events: {},
+        },
+        {
+          id: "c-order",
+          type: "Form",
+          props: { title: "Pesan di sini", submitText: "Pesan" },
+          style: {},
+          children: [
+            {
+              id: "c-order-name",
+              type: "Input",
+              props: { label: "Nama", placeholder: "Nama kamu" },
+              style: {},
+              children: [],
+              events: {},
+            },
+          ],
+          events: {},
+        },
+      ],
+    },
+  ],
+};

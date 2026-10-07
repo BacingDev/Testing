@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Flex, Text } from "@chakra-ui/react";
 import {
   getAuthToken,
@@ -15,13 +15,14 @@ import {
  */
 export default function RequireAuth({ children }) {
   const router = useRouter();
+  const pathname = usePathname();
   const token = useSyncExternalStore(subscribeAuth, getAuthToken, getServerAuthToken);
 
   useEffect(() => {
     if (token === null) {
-      router.replace("/auth/login");
+      router.replace(`/auth/login?next=${encodeURIComponent(pathname ?? "/")}`);
     }
-  }, [token, router]);
+  }, [token, router, pathname]);
 
   if (token === null) {
     return (

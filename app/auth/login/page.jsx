@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Box, Button, Flex, HStack, IconButton, Input, Text } from "@chakra-ui/react";
 import { TbEye, TbEyeOff, TbHierarchy2 } from "react-icons/tb";
 
@@ -20,19 +20,36 @@ function readError(data, fallback) {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function safeNext(value) {
+  if (typeof value === "string" && value.startsWith("/") && !value.startsWith("//")) {
+    return value;
+  }
+  return "/";
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNext(searchParams.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Sudah login? Langsung ke halaman utama, tidak perlu lihat form lagi.
+  // Sudah login? Langsung ke tujuan, tidak perlu lihat form lagi.
   useEffect(() => {
     if (localStorage.getItem("access_token")) {
-      router.replace("/");
+      router.replace(next);
     }
-  }, [router]);
+  }, [router, next]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,7 +72,7 @@ export default function LoginPage() {
       if (data.refresh_token) {
         localStorage.setItem("refresh_token", data.refresh_token);
       }
-      router.push("/");
+      router.push(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

@@ -131,7 +131,7 @@ export default function Navbar({ onToggleLeft, onToggleRight }) {
               </Text>
             </HStack>
           </Link>
-<          <Link
+          <Link
             href="/landing"
             style={{ textDecoration: "none", color: "inherit" }}
           >

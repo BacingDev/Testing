@@ -31,7 +31,9 @@ export default function LandingFromCanvasPage({ params }) {
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const nodesRef = useRef(null);
-  nodesRef.current = nodes;
+  useEffect(() => {
+    nodesRef.current = nodes;
+  }, [nodes]);
 
   const fetchNodes = useCallback(async () => {
     const graph = await getCanvasGraph(id);

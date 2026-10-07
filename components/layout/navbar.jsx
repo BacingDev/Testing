@@ -31,7 +31,6 @@ export default function Navbar({ onToggleLeft, onToggleRight }) {
   const blogActive = pathname?.startsWith("/blog") ?? false;
   const listActive = pathname?.startsWith("/list") ?? false;
   const appsActive = (pathname?.startsWith("/apps") ?? false) || (pathname?.startsWith("/editor") ?? false);
-  const listActive = pathname?.startsWith("/list") ?? false;
   const dirty = useGraphStore((state) => state.dirty);
   const [saveState, setSaveState] = useState("idle");
   const token = useSyncExternalStore(

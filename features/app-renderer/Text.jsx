@@ -1,6 +1,9 @@
 import { Text } from "@chakra-ui/react";
 
-export function TextNode({ props, style }) {
+export function TextNode({ props, style, vars }) {
+  const text = String(props.text || "").replace(/\{\{\s*([\w.-]+)\s*\}\}/g, (match, key) =>
+    vars && vars[key] !== undefined ? String(vars[key]) : match,
+  );
   return (
     <Text
       fontSize={props.size || "md"}
@@ -8,7 +11,7 @@ export function TextNode({ props, style }) {
       textAlign={props.align || "left"}
       {...style}
     >
-      {props.text || ""}
+      {text}
     </Text>
   );
 }

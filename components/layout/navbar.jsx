@@ -30,6 +30,7 @@ export default function Navbar({ onToggleLeft, onToggleRight }) {
   const router = useRouter();
   const blogActive = pathname?.startsWith("/blog") ?? false;
   const landingActive = pathname?.startsWith("/landing") ?? false;
+  const appsActive = (pathname?.startsWith("/apps") ?? false) || (pathname?.startsWith("/editor") ?? false);
   const listActive = pathname?.startsWith("/list") ?? false;
   const canvasActive = pathname?.startsWith("/canvases") ?? false;
   const dirty = useGraphStore((state) => state.dirty);
@@ -146,6 +147,24 @@ export default function Navbar({ onToggleLeft, onToggleRight }) {
             >
               <Text fontSize="xs" fontWeight="semibold">
                 Landing
+              </Text>
+            </HStack>
+          </Link>
+          <Link
+            href="/apps"
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            <HStack
+              gap={1.5}
+              px={2}
+              py={0.5}
+              rounded="md"
+              color={appsActive ? "teal.fg" : "fg.muted"}
+              bg={appsActive ? "teal.subtle" : "transparent"}
+              _hover={{ bg: "bg.muted", color: "fg" }}
+            >
+              <Text fontSize="xs" fontWeight="semibold">
+                Apps
               </Text>
             </HStack>
           </Link>

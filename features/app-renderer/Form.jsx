@@ -1,6 +1,6 @@
 import { Box, Button, Text } from "@chakra-ui/react";
 
-export function FormNode({ props, style, nodes }) {
+export function FormNode({ props, style, nodes, onSubmit }) {
   return (
     <Box
       as="form"
@@ -9,7 +9,10 @@ export function FormNode({ props, style, nodes }) {
       borderRadius="lg"
       bg="bg.panel"
       p={5}
-      onSubmit={(event) => event.preventDefault()}
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit?.();
+      }}
       {...style}
     >
       <Text fontWeight="bold" mb={4}>
@@ -26,9 +29,10 @@ export function FormNode({ props, style, nodes }) {
 }
 
 export const formDefinition = {
-  defaultProps: { title: "Formulir", submitText: "Kirim" },
+  defaultProps: { title: "Formulir", submitText: "Kirim", table: "" },
   propSchema: [
     { key: "title", label: "Judul form", input: "text" },
     { key: "submitText", label: "Tulisan tombol", input: "text" },
+    { key: "table", label: "Tabel tujuan submit", input: "text" },
   ],
 };

@@ -1,11 +1,12 @@
 import { Button } from "@chakra-ui/react";
 
-export function ButtonNode({ props, style }) {
+export function ButtonNode({ props, style, onClick }) {
   return (
     <Button
       variant={props.variant || "solid"}
       colorPalette={props.color || "blue"}
       size={props.size || "md"}
+      onClick={onClick}
       {...style}
     >
       {props.label || "Button"}

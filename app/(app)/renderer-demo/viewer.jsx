@@ -28,7 +28,7 @@ export default function DemoViewer() {
       <Text fontSize="xs" color="fg.muted" mb={6}>
         Path aktif: {normalizePath(path)} — di-resolve renderer ke page yang cocok.
       </Text>
-      <AppRenderer definition={demoDefinition} path={path} />
+      <AppRenderer definition={demoDefinition} path={path} onNavigate={setPath} />
     </Box>
   );
 }

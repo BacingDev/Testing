@@ -163,6 +163,22 @@ export const useAppEditorStore = create((set, get) => ({
     if (get().selectedId === id) set({ selectedId: null });
   },
 
+  setNodeEvent: (id, eventName, action) => {
+    const page = activePage(get);
+    if (!page) return;
+    setPageComponents(
+      set,
+      get,
+      page.id,
+      updateTree(page.components, id, (node) => {
+        const events = { ...(node.events ?? {}) };
+        if (action) events[eventName] = action;
+        else delete events[eventName];
+        return { ...node, events };
+      }),
+    );
+  },
+
   moveNode: (id, delta) => {
     const page = activePage(get);
     if (!page) return;

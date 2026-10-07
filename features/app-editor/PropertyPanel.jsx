@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Box, Button, Field, HStack, Input, Separator, Text } from "@chakra-ui/react";
 import { TbDeviceFloppy, TbRedo, TbTrash, TbUndo } from "react-icons/tb";
 import { registry } from "@/features/app-renderer/registry";
+import { ACTION_PARAM_SCHEMAS, ACTION_TYPES } from "@/features/app-renderer/actions";
 import { useAppEditorStore, writeLocalDraft } from "@/features/app-editor/store";
 import { saveAppDefinition } from "@/lib/apps-api";
 
@@ -96,6 +97,7 @@ export default function PropertyPanel({ onSaved }) {
   const selectedNode = useAppEditorStore((state) => state.selectedNode());
   const updateProps = useAppEditorStore((state) => state.updateProps);
   const updateStyle = useAppEditorStore((state) => state.updateStyle);
+  const setNodeEvent = useAppEditorStore((state) => state.setNodeEvent);
   const deleteNode = useAppEditorStore((state) => state.deleteNode);
   const undo = useAppEditorStore((state) => state.undo);
   const redo = useAppEditorStore((state) => state.redo);
@@ -293,6 +295,40 @@ export default function PropertyPanel({ onSaved }) {
               <TbTrash size={14} />
               Hapus komponen
             </Button>
+            <Text fontSize="xs" fontWeight="semibold" mt={1}>
+              Event onClick
+            </Text>
+            <Field.Root>
+              <Field.Label>Aksi</Field.Label>
+              <select
+                value={selectedNode.events?.onClick?.action ?? ""}
+                onChange={(event) => {
+                  const action = event.target.value;
+                  setNodeEvent(selectedNode.id, "onClick", action ? { action } : null);
+                }}
+                style={{ fontSize: 13, padding: "6px 8px", borderRadius: 6, border: "1px solid #cbd5e1", background: "white", width: "100%" }}
+              >
+                <option value="">— tidak ada —</option>
+                {ACTION_TYPES.map((action) => (
+                  <option key={action} value={action}>
+                    {action}
+                  </option>
+                ))}
+              </select>
+            </Field.Root>
+            {(ACTION_PARAM_SCHEMAS[selectedNode.events?.onClick?.action] ?? []).map((schema) => (
+              <PropField
+                key={schema.key}
+                schema={schema}
+                current={selectedNode.events?.onClick?.[schema.key] ?? ""}
+                onChange={(value) =>
+                  setNodeEvent(selectedNode.id, "onClick", {
+                    ...(selectedNode.events?.onClick ?? {}),
+                    [schema.key]: value,
+                  })
+                }
+              />
+            ))}
           </Box>
         )}
       </Box>

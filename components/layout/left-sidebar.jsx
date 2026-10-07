@@ -20,6 +20,7 @@ import {
   TbDiamond,
   TbEdit,
   TbLayoutDashboard,
+  TbRocket,
   TbSquare,
   TbTable,
 } from "react-icons/tb";
@@ -30,6 +31,7 @@ const DRAG_MIME = "application/x-myapp-unit";
 
 const CATEGORY_ICON = {
   layout: TbLayoutDashboard,
+  landing: TbRocket,
   data: TbTable,
   form: TbEdit,
   action: TbBolt,

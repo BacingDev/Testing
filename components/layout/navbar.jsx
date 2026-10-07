@@ -29,10 +29,9 @@ export default function Navbar({ onToggleLeft, onToggleRight }) {
   const pathname = usePathname();
   const router = useRouter();
   const blogActive = pathname?.startsWith("/blog") ?? false;
-  const landingActive = pathname?.startsWith("/landing") ?? false;
+  const listActive = pathname?.startsWith("/list") ?? false;
   const appsActive = (pathname?.startsWith("/apps") ?? false) || (pathname?.startsWith("/editor") ?? false);
   const listActive = pathname?.startsWith("/list") ?? false;
-  const canvasActive = pathname?.startsWith("/canvases") ?? false;
   const dirty = useGraphStore((state) => state.dirty);
   const [saveState, setSaveState] = useState("idle");
   const token = useSyncExternalStore(
@@ -133,24 +132,6 @@ export default function Navbar({ onToggleLeft, onToggleRight }) {
             </HStack>
           </Link>
           <Link
-            href="/landing"
-            style={{ textDecoration: "none", color: "inherit" }}
-          >
-            <HStack
-              gap={1.5}
-              px={2}
-              py={0.5}
-              rounded="md"
-              color={landingActive ? "orange.fg" : "fg.muted"}
-              bg={landingActive ? "orange.subtle" : "transparent"}
-              _hover={{ bg: "bg.muted", color: "fg" }}
-            >
-              <Text fontSize="xs" fontWeight="semibold">
-                Landing
-              </Text>
-            </HStack>
-          </Link>
-          <Link
             href="/apps"
             style={{ textDecoration: "none", color: "inherit" }}
           >
@@ -183,24 +164,6 @@ export default function Navbar({ onToggleLeft, onToggleRight }) {
             >
               <Text fontSize="xs" fontWeight="semibold">
                 List
-              </Text>
-            </HStack>
-          </Link>
-          <Link
-            href="/canvases"
-            style={{ textDecoration: "none", color: "inherit" }}
-          >
-            <HStack
-              gap={1.5}
-              px={2}
-              py={0.5}
-              rounded="md"
-              color={canvasActive ? "purple.fg" : "fg.muted"}
-              bg={canvasActive ? "purple.subtle" : "transparent"}
-              _hover={{ bg: "bg.muted", color: "fg" }}
-            >
-              <Text fontSize="xs" fontWeight="semibold">
-                Preview
               </Text>
             </HStack>
           </Link>

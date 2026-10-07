@@ -35,10 +35,21 @@ export function RenderPage({ page }) {
   );
 }
 
-export function AppRenderer({ definition, pageId }) {
+export function normalizePath(path) {
+  if (typeof path !== "string" || path === "") return "/";
+  const clean = path.split("?")[0].split("#")[0];
+  if (!clean.startsWith("/")) return `/${clean}`;
+  return clean.length > 1 && clean.endsWith("/") ? clean.slice(0, -1) : clean;
+}
+
+export function findPageByPath(pages, path) {
+  const target = normalizePath(path);
+  return (pages ?? []).find((page) => normalizePath(page.path) === target) ?? null;
+}
+
+export function AppRenderer({ definition, path, pageId }) {
   const pages = definition?.pages ?? [];
-  const page = (pageId && pages.find((item) => item.id === pageId)) || pages[0] || null;
-  if (!page) {
+  if (pages.length === 0) {
     return (
       <Box borderWidth="1px" borderStyle="dashed" borderColor="border" borderRadius="lg" p={8} textAlign="center">
         <Text fontSize="sm" color="fg.muted">
@@ -47,5 +58,18 @@ export function AppRenderer({ definition, pageId }) {
       </Box>
     );
   }
-  return <RenderPage page={page} />;
+  const byPath = path !== undefined && path !== null ? findPageByPath(pages, path) : null;
+  const byId = pageId ? pages.find((item) => item.id === pageId) ?? null : null;
+  const page = byPath || byId || null;
+  if (path !== undefined && path !== null && !page) {
+    return (
+      <Box borderWidth="1px" borderStyle="dashed" borderColor="border" borderRadius="lg" p={8} textAlign="center">
+        <Text fontWeight="bold">404 — halaman tidak ada</Text>
+        <Text fontSize="sm" color="fg.muted" mt={1}>
+          Tidak ada page untuk path {normalizePath(path)} di app ini.
+        </Text>
+      </Box>
+    );
+  }
+  return <RenderPage page={page || pages[0] || null} />;
 }

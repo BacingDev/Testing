@@ -1,6 +1,6 @@
 import { Badge, Box, HStack, Text } from "@chakra-ui/react";
 import Navbar from "@/components/layout/navbar";
-import { AppRenderer } from "@/features/app-renderer/renderer";
+import DemoViewer from "@/app/(app)/renderer-demo/viewer";
 import { demoDefinition } from "@/app/(app)/renderer-demo/sample";
 
 export const metadata = {
@@ -33,9 +33,9 @@ export default function RendererDemoPage() {
         </Text>
         <Text fontSize="sm" color="fg.muted" mb={6}>
           Di bawah ini murni hasil baca JSON lewat registry — belum ada editor,
-          belum ada event.
+          belum ada event. Pindah path untuk melihat routing page.
         </Text>
-        <AppRenderer definition={demoDefinition} />
+        <DemoViewer />
       </Box>
     </Box>
   );

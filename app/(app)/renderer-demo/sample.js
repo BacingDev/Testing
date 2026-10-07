@@ -76,5 +76,45 @@ export const demoDefinition = {
         },
       ],
     },
+    {
+      id: "p2",
+      path: "/checkout",
+      title: "Checkout",
+      components: [
+        {
+          id: "c-co-title",
+          type: "Heading",
+          props: { text: "Checkout", level: 1, align: "left" },
+          style: {},
+          children: [],
+          events: {},
+        },
+        {
+          id: "c-co-card",
+          type: "Card",
+          props: { title: "Ringkasan pesanan" },
+          style: {},
+          children: [
+            {
+              id: "c-co-list",
+              type: "List",
+              props: { items: ["Latte x1", "Cappuccino x2"] },
+              style: {},
+              children: [],
+              events: {},
+            },
+          ],
+          events: {},
+        },
+        {
+          id: "c-co-back",
+          type: "Button",
+          props: { label: "Kembali", variant: "outline", color: "gray", size: "md" },
+          style: {},
+          children: [],
+          events: { onClick: { action: "navigate", to: "/" } },
+        },
+      ],
+    },
   ],
 };

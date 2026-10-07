@@ -119,7 +119,9 @@ export function AppRenderer({ definition, path, pageId, basePath = "", onNavigat
   const [forms, setForms] = useState({});
   const [tables, setTables] = useState({});
   const formsRef = useRef({});
-  formsRef.current = forms;
+  useEffect(() => {
+    formsRef.current = forms;
+  }, [forms]);
 
   const page = (() => {
     if (path !== undefined && path !== null) return findPageByPath(pages, path);

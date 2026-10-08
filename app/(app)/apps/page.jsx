@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge, Box, Button, Flex, HStack, Input, Text } from "@chakra-ui/react";
-import { TbExternalLink, TbHierarchy2, TbPencil, TbPlus, TbRocket, TbTrash } from "react-icons/tb";
+import { TbExternalLink, TbHierarchy2, TbPlus, TbRocket, TbTrash } from "react-icons/tb";
 import Navbar from "@/components/layout/navbar";
 import { createApp, deleteApp, fetchApp, listApps, listVersions, publishApp } from "@/lib/apps-api";
 import { appPageToNodes } from "@/lib/app-canvas-bridge";
@@ -84,6 +84,21 @@ export default function AppsPage() {
     };
   }, []);
 
+  const loadIntoCanvas = async (full) => {
+    const page = (full.definition.pages ?? [])[0];
+    if (!page) throw new Error("App ini belum punya page.");
+    useGraphStore.getState().setEditingApp({
+      appId: full.id,
+      slug: full.slug,
+      name: full.name,
+      definition: full.definition,
+      pageId: page.id,
+    });
+    useGraphStore.getState().hydrate({ nodes: appPageToNodes(page), edges: [] });
+    await saveGraphLocal();
+    router.push("/");
+  };
+
   const handleCreate = async (event) => {
     event.preventDefault();
     if (busy || !name.trim()) return;
@@ -91,7 +106,7 @@ export default function AppsPage() {
     setError("");
     try {
       const app = await createApp({ name: name.trim() });
-      router.push(`/editor/${app.id}`);
+      await loadIntoCanvas(app);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -117,18 +132,7 @@ export default function AppsPage() {
     setError("");
     try {
       const full = await fetchApp(app.id);
-      const page = (full.definition.pages ?? [])[0];
-      if (!page) throw new Error("App ini belum punya page.");
-      useGraphStore.getState().setEditingApp({
-        appId: full.id,
-        slug: full.slug,
-        name: full.name,
-        definition: full.definition,
-        pageId: page.id,
-      });
-      useGraphStore.getState().hydrate({ nodes: appPageToNodes(page), edges: [] });
-      await saveGraphLocal();
-      router.push("/");
+      await loadIntoCanvas(full);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -209,7 +213,7 @@ export default function AppsPage() {
           <Box borderWidth="1px" borderColor="border" borderRadius="lg" bg="bg.panel" p={8} textAlign="center">
             <Text fontWeight="semibold">Belum ada app</Text>
             <Text fontSize="sm" color="fg.muted" mt={1}>
-              Buat app pertama lewat form di atas, atau coba editor demo di /editor/demo.
+              Buat app pertama lewat form di atas, lalu edit langsung di canvas.
             </Text>
           </Box>
         ) : (
@@ -232,19 +236,13 @@ export default function AppsPage() {
                     </Box>
                   </Box>
                   <HStack gap={1} flexShrink="0" flexWrap="wrap">
-                    <Link href={`/editor/${app.id}`} style={{ textDecoration: "none" }}>
-                      <Button size="xs" variant="outline" colorPalette="green">
-                        <TbPencil size={14} />
-                        Edit
-                      </Button>
-                    </Link>
                     <Button
                       size="xs"
                       variant="outline"
-                      colorPalette="blue"
+                      colorPalette="green"
                       loading={busyId === app.id}
                       onClick={() => handleEditCanvas(app)}
-                      title="Edit di canvas React Flow"
+                      title="Edit di canvas"
                     >
                       <TbHierarchy2 size={14} />
                       Canvas

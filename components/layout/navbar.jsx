@@ -145,7 +145,7 @@ export default function Navbar({ onToggleLeft, onToggleRight }) {
               _hover={{ bg: "bg.muted", color: "fg" }}
             >
               <Text fontSize="xs" fontWeight="semibold">
-                Apps
+                Aplikasi
               </Text>
             </HStack>
           </Link>

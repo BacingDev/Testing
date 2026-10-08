@@ -104,8 +104,8 @@ function CanvasItemDialogsInner({
     ? findPort(deletePortNode, deleting.portId)
     : null;
 
-  const handleSaveNode = (id, { label, image, shown, style }) => {
-    updateNodeData(id, { label, image, shown });
+  const handleSaveNode = (id, { label, image, shown, style, widget }) => {
+    updateNodeData(id, { label, image, shown, ...(widget !== undefined ? { widget } : {}) });
     updateNodeStyle(id, style);
     onCloseEditing();
   };

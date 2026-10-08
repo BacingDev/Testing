@@ -647,8 +647,15 @@ function NodePropertiesForm({ node, onCancel, onSave }) {
           <Field.Root>
             <Field.Label>Gambar unit</Field.Label>
             <ImagePicker value={image} onChange={setImage} />
+            <Input
+              size="sm"
+              mt={2}
+              value={image}
+              placeholder="https://… (URL gambar asli, opsional)"
+              onChange={(event) => setImage(event.target.value)}
+            />
             <Field.HelperText>
-              Sumber gambar sama dengan daftar komponen di sidebar kiri.
+              Pilih dari katalog, atau tempel URL gambar asli (https://…).
             </Field.HelperText>
           </Field.Root>
 

@@ -32,6 +32,17 @@ export default function NodeEditor({ node }) {
           onChange={(event) => updateNodeData(node.id, { label: event.target.value })}
         />
       </Field.Root>
+      {unitId === "image" ? (
+        <Field.Root mb={2}>
+          <Field.Label>URL gambar (src)</Field.Label>
+          <Input
+            size="sm"
+            value={node.data?.image ?? ""}
+            placeholder="https://…"
+            onChange={(event) => updateNodeData(node.id, { image: event.target.value })}
+          />
+        </Field.Root>
+      ) : null}
       {unitId ? (
         <Box display="flex" flexDirection="column" gap={2}>
           <WidgetFields

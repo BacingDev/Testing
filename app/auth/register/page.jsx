@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getValidAuthToken } from "@/lib/auth-token";
 import { Box, Button, Flex, HStack, IconButton, Input, Text } from "@chakra-ui/react";
 import { TbEye, TbEyeOff, TbHierarchy2 } from "react-icons/tb";
 
@@ -29,9 +30,9 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Sudah login? Langsung ke halaman utama, tidak perlu daftar lagi.
+  // Sudah login (token valid)? Langsung ke halaman utama, tidak perlu daftar lagi.
   useEffect(() => {
-    if (localStorage.getItem("access_token")) {
+    if (getValidAuthToken()) {
       router.replace("/");
     }
   }, [router]);

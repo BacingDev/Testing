@@ -4,8 +4,8 @@ import { useEffect, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Flex, Text } from "@chakra-ui/react";
 import {
-  getAuthToken,
   getServerAuthToken,
+  getValidAuthToken,
   subscribeAuth,
 } from "@/lib/auth-token";
 
@@ -16,7 +16,7 @@ import {
 export default function RequireAuth({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const token = useSyncExternalStore(subscribeAuth, getAuthToken, getServerAuthToken);
+  const token = useSyncExternalStore(subscribeAuth, getValidAuthToken, getServerAuthToken);
 
   useEffect(() => {
     if (token === null) {

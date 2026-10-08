@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getValidAuthToken } from "@/lib/auth-token";
 import { Box, Button, Flex, HStack, IconButton, Input, Text } from "@chakra-ui/react";
 import { TbEye, TbEyeOff, TbHierarchy2 } from "react-icons/tb";
 
@@ -44,9 +45,9 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Sudah login? Langsung ke tujuan, tidak perlu lihat form lagi.
+  // Sudah login (token valid)? Langsung ke tujuan, tidak perlu lihat form lagi.
   useEffect(() => {
-    if (localStorage.getItem("access_token")) {
+    if (getValidAuthToken()) {
       router.replace(next);
     }
   }, [router, next]);

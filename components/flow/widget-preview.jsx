@@ -28,7 +28,7 @@ export const WIDGET_ENUMS = {
   buttonSizes: ["xs", "sm", "md"],
   textSizes: ["xs", "sm", "md", "lg", "xl"],
   aligns: ["left", "center", "right"],
-  directions: ["row", "column"],
+  directions: ["row", "column", "grid"],
 };
 
 /** Isi default widget tiap unit katalog (dipakai saat node baru di-drop). */
@@ -49,7 +49,7 @@ export const WIDGET_DEFAULTS = {
   chart: { title: "Grafik", values: [35, 65, 45, 80, 55] },
   form: { title: "Formulir", submitText: "Kirim" },
   page: { text: "Halaman" },
-  container: { text: "Kontainer", direction: "row" },
+  container: { text: "Kontainer", direction: "row", columns: 2 },
   image: { alt: "" },
   heading: { text: "Judul", level: 1, align: "left" },
   list: { items: ["Item 1", "Item 2", "Item 3"], table: "", field: "" },
@@ -693,7 +693,8 @@ export function WidgetFields({ unitId, widget, onChange }) {
       return (
         <>
           {textField("text", "Keterangan", "Kontainer")}
-          {enumField("direction", "Susun anak", WIDGET_ENUMS.directions)}
+          {enumField("direction", "Layout", WIDGET_ENUMS.directions)}
+          {textField("columns", "Kolom grid", "2")}
         </>
       );
     case "image":

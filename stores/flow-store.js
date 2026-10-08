@@ -35,6 +35,9 @@ export const useFlowStore = create((set) => ({
   revision: 0,
   bumpRevision: () => set((state) => ({ revision: state.revision + 1 })),
 
+  previewOpen: false,
+  setPreviewOpen: (previewOpen) => set({ previewOpen }),
+
   zoom: 1,
   setZoom: (zoom) => set({ zoom }),
 

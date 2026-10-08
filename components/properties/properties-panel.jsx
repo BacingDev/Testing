@@ -5,6 +5,7 @@ import { Box, Flex, HStack, Tabs, Text } from "@chakra-ui/react";
 import { TbBan, TbSettings2 } from "react-icons/tb";
 import { CanvasTable } from "@/components/properties/canvas-table";
 import { DetailTable } from "@/components/properties/detail-table";
+import NodeEditor from "@/components/properties/node-editor";
 import {
   buildCanvasRows,
   buildDetailTabs,
@@ -120,6 +121,8 @@ export default function PropertiesPanel() {
             : `${nodeCount} node. Klik baris untuk detail.`}
         </Text>
       </Flex>
+
+      {focus?.kind === "node" && focus.node ? <NodeEditor node={focus.node} /> : null}
 
       <Flex direction="column" flex="1" minH="0" px={3} py={3}>
         <CanvasTable

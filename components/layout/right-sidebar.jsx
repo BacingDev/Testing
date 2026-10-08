@@ -6,7 +6,7 @@ export default function RightSidebar() {
     <Flex
       as="aside"
       direction="column"
-      width="96"
+      width="80"
       flexShrink="0"
       minHeight="0"
       overflow="hidden"

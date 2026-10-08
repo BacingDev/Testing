@@ -20,7 +20,7 @@ import LeftSidebar from "@/components/layout/left-sidebar";
 import RightSidebar from "@/components/layout/right-sidebar";
 
 function MobilePanel({ side, title, onClose, children }) {
-  const panelWidth = side === "right" ? "400px" : "300px";
+  const panelWidth = side === "right" ? "340px" : "272px";
   return (
     <>
       <Box

@@ -12,8 +12,8 @@ export default function NodeEditor({ node }) {
 
   return (
     <Box
-      px={4}
-      py={3}
+      px={3}
+      py={2.5}
       borderBottomWidth="1px"
       borderColor="border"
       bg="bg.panel"
@@ -21,7 +21,15 @@ export default function NodeEditor({ node }) {
       maxH="42%"
       overflowY="auto"
     >
-      <Text fontSize="sm" fontWeight="semibold" mb={2} noOfLines={1}>
+      <Text
+        fontSize="10px"
+        fontWeight="bold"
+        textTransform="uppercase"
+        letterSpacing="wider"
+        color="fg.muted"
+        mb={2}
+        noOfLines={1}
+      >
         Edit: {node.data?.label || node.data?.unitId || node.id}
       </Text>
       <Field.Root mb={2}>

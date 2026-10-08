@@ -121,7 +121,7 @@ export default function LeftSidebar({ onItemDragStart }) {
     <Flex
       as="aside"
       direction="column"
-      width="64"
+      width="52"
       flexShrink="0"
       overflowY="auto"
       borderRightWidth="1px"
@@ -176,10 +176,15 @@ export default function LeftSidebar({ onItemDragStart }) {
           {UNIT_CATEGORIES.map((category) => {
             const Icon = CATEGORY_ICON[category.key];
             return (
-              <Box key={category.key} px={3} pt={3}>
-                <HStack gap={1.5} color="fg" mb={2}>
-                  <Icon size={15} />
-                  <Text fontSize="sm" fontWeight="semibold">
+              <Box key={category.key} px={2} pt={2.5}>
+                <HStack gap={1.5} color="fg.muted" mb={1.5}>
+                  <Icon size={13} />
+                  <Text
+                    fontSize="10px"
+                    fontWeight="bold"
+                    textTransform="uppercase"
+                    letterSpacing="wider"
+                  >
                     {category.label}
                   </Text>
                 </HStack>

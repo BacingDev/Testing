@@ -110,8 +110,13 @@ export default function PropertiesPanel() {
         borderColor="border"
       >
         <HStack gap={2} color="fg">
-          <TbSettings2 size={16} />
-          <Text fontSize="sm" fontWeight="semibold">
+          <TbSettings2 size={14} />
+          <Text
+            fontSize="10px"
+            fontWeight="bold"
+            textTransform="uppercase"
+            letterSpacing="wider"
+          >
             Properties
           </Text>
         </HStack>

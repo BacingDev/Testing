@@ -1024,7 +1024,8 @@ export function FlowCanvas() {
             variant={BackgroundVariant.Dots}
             gap={20}
             size={1}
-            color="#cbd5e1"
+            color="#3f3f46"
+            bgColor="#17171a"
           />
           {/* Minimap hanya di layar cukup lebar (tidak menutup canvas HP). */}
           <Box display={{ base: "none", md: "block" }}>

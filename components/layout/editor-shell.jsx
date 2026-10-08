@@ -11,7 +11,7 @@
  */
 
 import { useState } from "react";
-import { Box, Flex, IconButton } from "@chakra-ui/react";
+import { Box, DarkMode, Flex, IconButton } from "@chakra-ui/react";
 import { TbAdjustments, TbLayoutSidebar, TbX } from "react-icons/tb";
 import FlowEditor from "@/components/flow-editor";
 import Navbar from "@/components/layout/navbar";
@@ -82,6 +82,7 @@ export default function EditorShell() {
   const [rightOpen, setRightOpen] = useState(false);
 
   return (
+    <DarkMode>
     <Flex direction="column" height="100vh" overflow="hidden" bg="bg.subtle">
       <Navbar
         onToggleLeft={() => {
@@ -163,5 +164,6 @@ export default function EditorShell() {
         ) : null}
       </Flex>
     </Flex>
+    </DarkMode>
   );
 }

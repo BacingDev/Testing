@@ -3,8 +3,9 @@
 import { MiniMap } from "@xyflow/react";
 import { useGraphStore } from "@/stores/graph-store";
 
-const NODE_STROKE = "#cbd5e1";
-const NODE_SELECTED_STROKE = "#2563eb";
+const NODE_FILL = "#2b2b30";
+const NODE_STROKE = "#52525b";
+const NODE_SELECTED_STROKE = "#3b82f6";
 
 // React Flow tidak mengirim data node ke `nodeComponent`, jadi gambarnya
 // diambil langsung dari store. Selector ini hanya memicu render ulang node
@@ -22,7 +23,7 @@ function MiniMapUnit({ id, x, y, width, height, borderRadius, selected }) {
         width={width}
         height={height}
         rx={borderRadius}
-        fill="#ffffff"
+        fill={NODE_FILL}
         stroke={selected ? NODE_SELECTED_STROKE : NODE_STROKE}
         strokeWidth={selected ? 2 : 1}
       />
@@ -48,15 +49,15 @@ export function CanvasMiniMap() {
       nodeBorderRadius={4}
       pannable
       zoomable
-      bgColor="#f8fafc"
-      maskColor="rgba(15, 23, 42, 0.08)"
-      maskStrokeColor="rgba(15, 23, 42, 0.2)"
+      bgColor="#17171a"
+      maskColor="rgba(255, 255, 255, 0.06)"
+      maskStrokeColor="rgba(255, 255, 255, 0.15)"
       ariaLabel="Peta mini diagram"
       style={{
         width: 200,
         height: 120,
         borderRadius: 4,
-        border: "1px solid #e2e8f0",
+        border: "1px solid #3f3f46",
       }}
     />
   );

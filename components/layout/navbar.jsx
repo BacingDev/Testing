@@ -23,6 +23,7 @@ import {
 import { useFlowStore } from "@/stores/flow-store";
 import { useGraphStore } from "@/stores/graph-store";
 import BackendStatus from "@/components/layout/backend-status";
+import AppEditBar from "@/components/layout/app-edit-bar";
 
 export default function Navbar({ onToggleLeft, onToggleRight }) {
   const zoom = useFlowStore((state) => state.zoom);
@@ -252,6 +253,7 @@ export default function Navbar({ onToggleLeft, onToggleRight }) {
           ) : null}
         </HStack>
       </Flex>
+      {pathname === "/" ? <AppEditBar /> : null}
     </Box>
   );
 }

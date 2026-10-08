@@ -158,6 +158,31 @@ export const useGraphStore = create((set) => ({
   markDirty: () => set((state) => (state.dirty ? state : { dirty: true })),
   markClean: () => set((state) => (!state.dirty ? state : { dirty: false })),
 
+  /** App builder yang sedang diedit di canvas (null = mode canvas biasa). */
+  editingApp: null,
+  setEditingApp: (editingApp) => set({ editingApp }),
+  clearEditingApp: () => set({ editingApp: null }),
+  switchEditingPage: (pageId) =>
+    set((state) =>
+      state.editingApp ? { editingApp: { ...state.editingApp, pageId } } : state,
+    ),
+  updateEditingPage: (pageId, components) =>
+    set((state) => {
+      if (!state.editingApp) return state;
+      return {
+        editingApp: {
+          ...state.editingApp,
+          pageId,
+          definition: {
+            ...state.editingApp.definition,
+            pages: (state.editingApp.definition.pages ?? []).map((page) =>
+              page.id === pageId ? { ...page, components } : page,
+            ),
+          },
+        },
+      };
+    }),
+
   setNodes: (updater) =>
     set((state) => ({
       nodes: typeof updater === "function" ? updater(state.nodes) : updater,

@@ -51,6 +51,9 @@ export const WIDGET_DEFAULTS = {
   page: { text: "Halaman" },
   container: { text: "Kontainer", direction: "row" },
   image: { alt: "" },
+  heading: { text: "Judul", level: 1, align: "left" },
+  list: { items: ["Item 1", "Item 2", "Item 3"], table: "", field: "" },
+  card: { title: "Kartu" },
   // --- section landing (di-render full-page oleh /landing/[id]) ---
   hero: {
     eyebrow: "Format 01 — Landing Page",
@@ -261,6 +264,54 @@ function WidgetBody({ unitId, widget, label, image }) {
               {widget.subtitle}
             </Text>
           ) : null}
+        </Box>
+      );
+    case "heading": {
+      const level = [1, 2, 3].includes(widget?.level) ? widget.level : 1;
+      return (
+        <Text
+          fontSize={level === 1 ? "md" : level === 2 ? "sm" : "xs"}
+          fontWeight="bold"
+          textAlign={widget?.align || "left"}
+          noOfLines={2}
+          width="100%"
+        >
+          {widget?.text || label || "Heading"}
+        </Text>
+      );
+    }
+    case "list": {
+      const rawItems = Array.isArray(widget?.items)
+        ? widget.items
+        : String(widget?.items ?? "")
+            .split("\n")
+            .map((part) => part.trim())
+            .filter(Boolean);
+      const items = rawItems.slice(0, 3);
+      return (
+        <>
+          <Text fontSize="10px" fontWeight="semibold" noOfLines={1}>
+            {widget?.table || label || "List"}
+          </Text>
+          {items.map((item, i) => (
+            <Text key={i} fontSize="9px" color="fg.muted" noOfLines={1}>
+              • {String(item)}
+            </Text>
+          ))}
+          {widget?.table ? (
+            <Text fontSize="9px" color="blue.fg" noOfLines={1}>
+              ⛁ {widget.table}
+            </Text>
+          ) : null}
+        </>
+      );
+    }
+    case "card":
+      return (
+        <Box borderWidth="1px" borderColor="border" borderRadius="md" p={2} textAlign="center">
+          <Text fontSize="xs" fontWeight="semibold" noOfLines={2}>
+            {widget?.title || label || "Card"}
+          </Text>
         </Box>
       );
     case "table": {
@@ -594,6 +645,48 @@ export function WidgetFields({ unitId, widget, onChange }) {
           {textField("subtitle", "Subjudul (opsional)", "")}
         </>
       );
+    case "heading":
+      return (
+        <>
+          {textField("text", "Isi judul", "Judul")}
+          {enumField("level", "Level", [1, 2, 3])}
+          {enumField("align", "Rata", WIDGET_ENUMS.aligns)}
+        </>
+      );
+    case "list":
+      return (
+        <>
+          <Field.Root>
+            <Field.Label>Item statis (satu baris satu item)</Field.Label>
+            <textarea
+              rows={3}
+              value={Array.isArray(value.items) ? value.items.join("\n") : ""}
+              placeholder={"Item 1\nItem 2"}
+              onChange={(event) =>
+                set({
+                  items: event.target.value
+                    .split("\n")
+                    .map((part) => part.trim())
+                    .filter(Boolean),
+                })
+              }
+              style={{
+                fontSize: 13,
+                padding: "6px 8px",
+                borderRadius: 6,
+                border: "1px solid #cbd5e1",
+                background: "white",
+                width: "100%",
+                fontFamily: "inherit",
+              }}
+            />
+          </Field.Root>
+          {textField("table", "Tabel data (ganti item statis)", "")}
+          {textField("field", "Field yang ditampilkan", "")}
+        </>
+      );
+    case "card":
+      return textField("title", "Judul kartu", "Kartu");
     case "page":
       return textField("text", "Nama halaman", "Halaman");
     case "container":

@@ -133,10 +133,10 @@ export function createUnitNode(unit, position) {
 
 export { flowPayload };
 
-/** Unit yang bisa menampung node lain (page / container). */
+/** Unit yang bisa menampung node lain (page / container / card / form). */
 export function isContainerData(data) {
   const unitId = data?.unitId ?? data?.componentType ?? null;
-  return unitId === "page" || unitId === "container";
+  return unitId === "page" || unitId === "container" || unitId === "card" || unitId === "form";
 }
 
 /** Page tidak boleh masuk ke dalam wadah lain, container/widget boleh. */

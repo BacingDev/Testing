@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge, Box, Button, Flex, HStack, Input, Text } from "@chakra-ui/react";
-import { TbExternalLink, TbPencil, TbPlus, TbRocket, TbTrash } from "react-icons/tb";
+import { TbExternalLink, TbHierarchy2, TbPencil, TbPlus, TbRocket, TbTrash } from "react-icons/tb";
 import Navbar from "@/components/layout/navbar";
-import { createApp, deleteApp, listApps, listVersions, publishApp } from "@/lib/apps-api";
+import { createApp, deleteApp, fetchApp, listApps, listVersions, publishApp } from "@/lib/apps-api";
+import { appPageToNodes } from "@/lib/app-canvas-bridge";
+import { saveGraph as saveGraphLocal } from "@/lib/flow-save";
+import { useGraphStore } from "@/stores/graph-store";
 
 function VersionHistory({ appId }) {
   const [versions, setVersions] = useState(null);
@@ -102,6 +105,30 @@ export default function AppsPage() {
     try {
       await deleteApp(app.id);
       setApps((prev) => (prev ?? []).filter((item) => item.id !== app.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleEditCanvas = async (app) => {
+    setBusyId(app.id);
+    setError("");
+    try {
+      const full = await fetchApp(app.id);
+      const page = (full.definition.pages ?? [])[0];
+      if (!page) throw new Error("App ini belum punya page.");
+      useGraphStore.getState().setEditingApp({
+        appId: full.id,
+        slug: full.slug,
+        name: full.name,
+        definition: full.definition,
+        pageId: page.id,
+      });
+      useGraphStore.getState().hydrate({ nodes: appPageToNodes(page), edges: [] });
+      await saveGraphLocal();
+      router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -211,6 +238,17 @@ export default function AppsPage() {
                         Edit
                       </Button>
                     </Link>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      colorPalette="blue"
+                      loading={busyId === app.id}
+                      onClick={() => handleEditCanvas(app)}
+                      title="Edit di canvas React Flow"
+                    >
+                      <TbHierarchy2 size={14} />
+                      Canvas
+                    </Button>
                     <Button
                       size="xs"
                       variant="outline"

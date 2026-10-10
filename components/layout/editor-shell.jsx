@@ -10,8 +10,8 @@
  *   Semua handler drag, save, dan properti tetap sama.
  */
 
-import { useState } from "react";
-import { Box, DarkMode, Flex, IconButton } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import { Box, Flex, IconButton } from "@chakra-ui/react";
 import { TbAdjustments, TbLayoutSidebar, TbX } from "react-icons/tb";
 import FlowEditor from "@/components/flow-editor";
 import Navbar from "@/components/layout/navbar";
@@ -81,9 +81,25 @@ export default function EditorShell() {
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
 
+  // Tema gelap hanya untuk editor. Chakra v3 tidak punya <DarkMode>; mode
+  // gelap aktif lewat class `dark`. Class di wrapper berlaku sejak render
+  // pertama, class di <html> supaya dialog/menu/tooltip (portal) ikut gelap.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("dark");
+    return () => root.classList.remove("dark");
+  }, []);
+
   return (
-    <DarkMode>
-    <Flex direction="column" height="100vh" overflow="hidden" bg="bg.subtle">
+    <Flex
+      className="dark"
+      direction="column"
+      height="100vh"
+      overflow="hidden"
+      bg="bg.subtle"
+      color="fg"
+      css={{ colorScheme: "dark" }}
+    >
       <Navbar
         onToggleLeft={() => {
           setRightOpen(false);
@@ -164,6 +180,5 @@ export default function EditorShell() {
         ) : null}
       </Flex>
     </Flex>
-    </DarkMode>
   );
 }

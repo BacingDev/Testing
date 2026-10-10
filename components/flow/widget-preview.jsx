@@ -14,8 +14,16 @@
  *   apa adanya (kolom JSONB, BE tidak perlu diubah).
  */
 
-import { memo } from "react";
-import { Box, Button, Field, Image, Input, Text } from "@chakra-ui/react";
+import { memo, useState } from "react";
+import { Box, Button, Image, Input, Text } from "@chakra-ui/react";
+import {
+  AreaValue,
+  BoolValue,
+  EnumValue,
+  NumberValue,
+  PropRow,
+  TextValue,
+} from "@/components/properties/ue-details";
 import { DEFAULT_NODE_IMAGE } from "@/data/dummy-flow";
 
 /**
@@ -539,369 +547,270 @@ export const WidgetPreview = memo(function WidgetPreview({
 });
 
 /**
- * Form edit isi widget untuk dialog Properti node.
+ * Field edit isi widget untuk panel Details (gaya UE5).
  * onChange dipanggil dengan object widget baru tiap field berubah.
  * Semua nilai yang disimpan adalah JSON primitif (string/number/array)
  * sehingga bisa ditulis tangan langsung sebagai JSON.
  */
+const splitList = (text, sep) =>
+  text
+    .split(sep)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+const WIDGET_FIELDS = {
+  button: [
+    { key: "text", label: "Tulisan button", placeholder: "Klik saya" },
+    { key: "color", label: "Warna", options: WIDGET_ENUMS.colors },
+    { key: "variant", label: "Gaya", options: WIDGET_ENUMS.buttonVariants },
+    { key: "size", label: "Ukuran", options: WIDGET_ENUMS.buttonSizes },
+  ],
+  text: [
+    { key: "text", label: "Isi teks", placeholder: "Tulis sesuatu…", area: 2 },
+    { key: "size", label: "Ukuran huruf", options: WIDGET_ENUMS.textSizes },
+    { key: "align", label: "Rata", options: WIDGET_ENUMS.aligns },
+    { key: "bold", label: "Tebal (bold)", bool: true },
+  ],
+  header: [
+    { key: "text", label: "Judul header", placeholder: "Judul Aplikasi" },
+    { key: "subtitle", label: "Subjudul" },
+  ],
+  heading: [
+    { key: "text", label: "Isi judul", placeholder: "Judul" },
+    { key: "level", label: "Level", options: [1, 2, 3] },
+    { key: "align", label: "Rata", options: WIDGET_ENUMS.aligns },
+  ],
+  list: [
+    {
+      key: "items",
+      label: "Item statis",
+      tooltip: "Satu baris satu item",
+      area: 3,
+      placeholder: "Item 1\nItem 2",
+      format: (value) => (Array.isArray(value) ? value.join("\n") : ""),
+      parse: (text) => splitList(text, "\n"),
+    },
+    { key: "table", label: "Tabel data", tooltip: "Mengganti item statis" },
+    { key: "field", label: "Field ditampilkan" },
+  ],
+  card: [{ key: "title", label: "Judul kartu", placeholder: "Kartu" }],
+  page: [{ key: "text", label: "Nama halaman", placeholder: "Halaman" }],
+  container: [
+    { key: "text", label: "Keterangan", placeholder: "Kontainer" },
+    { key: "direction", label: "Layout", options: WIDGET_ENUMS.directions },
+    { key: "columns", label: "Kolom grid", number: { min: 1, max: 6 } },
+  ],
+  image: [{ key: "alt", label: "Teks alt/caption" }],
+  "text-input": [
+    { key: "label", label: "Label input", placeholder: "Nama" },
+    { key: "placeholder", label: "Placeholder", placeholder: "Ketik di sini…" },
+  ],
+  select: [
+    { key: "label", label: "Label", placeholder: "Pilihan" },
+    {
+      key: "options",
+      label: "Opsi",
+      tooltip: "Pisahkan dengan koma",
+      placeholder: "Opsi 1, Opsi 2",
+      format: (value) => (Array.isArray(value) ? value.join(", ") : ""),
+      parse: (text) => splitList(text, ","),
+    },
+  ],
+  table: [
+    { key: "title", label: "Judul tabel", placeholder: "Data" },
+    {
+      key: "columns",
+      label: "Kolom",
+      tooltip: "Pisahkan dengan koma",
+      placeholder: "Nama, Nilai",
+      format: (value) => (Array.isArray(value) ? value.join(", ") : ""),
+      parse: (text) => splitList(text, ","),
+    },
+    {
+      key: "rows",
+      label: "Baris",
+      tooltip: "Satu baris per baris, sel dipisah |",
+      area: 3,
+      placeholder: "Contoh A | 10\nContoh B | 20",
+      format: (value) =>
+        Array.isArray(value) ? value.map((row) => (row ?? []).join(" | ")).join("\n") : "",
+      parse: (text) =>
+        text
+          .split("\n")
+          .map((line) => line.split("|").map((cell) => cell.trim()))
+          .filter((cells) => cells.some((cell) => cell !== "")),
+    },
+  ],
+  chart: [
+    { key: "title", label: "Judul grafik", placeholder: "Grafik" },
+    {
+      key: "values",
+      label: "Nilai",
+      tooltip: "Pisahkan dengan koma",
+      placeholder: "35, 65, 45",
+      format: (value) => (Array.isArray(value) ? value.join(", ") : ""),
+      parse: (text) =>
+        text
+          .split(",")
+          .map((part) => Number(part.trim()))
+          .filter((num) => Number.isFinite(num)),
+    },
+  ],
+  form: [
+    { key: "title", label: "Judul form", placeholder: "Formulir" },
+    { key: "submitText", label: "Tulisan tombol", placeholder: "Kirim" },
+  ],
+  hero: [
+    { key: "eyebrow", label: "Label kecil" },
+    { key: "title", label: "Judul besar" },
+    { key: "subtitle", label: "Subjudul", area: 3 },
+    { key: "ctaPrimary", label: "Tombol utama" },
+    { key: "ctaSecondary", label: "Tombol kedua" },
+  ],
+  "logo-strip": [
+    { key: "title", label: "Judul strip" },
+    { key: "logos", label: "Logo", tooltip: "Pisahkan dengan koma" },
+  ],
+  "features-grid": [
+    { key: "title", label: "Judul" },
+    { key: "subtitle", label: "Subjudul" },
+    { key: "items", label: "Fitur", tooltip: "Satu per baris: Judul | Deskripsi", area: 4 },
+  ],
+  "how-it-works": [
+    { key: "title", label: "Judul" },
+    { key: "steps", label: "Langkah", tooltip: "Satu per baris: Judul | Deskripsi", area: 4 },
+  ],
+  testimonial: [
+    { key: "title", label: "Judul" },
+    { key: "quotes", label: "Testimoni", tooltip: "Satu per baris: Kutipan | Nama | Peran", area: 4 },
+  ],
+  pricing: [
+    { key: "title", label: "Judul" },
+    { key: "subtitle", label: "Subjudul" },
+    {
+      key: "plans",
+      label: "Paket",
+      tooltip: "Satu per baris: Nama | Harga | Periode | fitur a; fitur b — awali * untuk populer",
+      area: 4,
+    },
+  ],
+  "cta-banner": [
+    { key: "title", label: "Judul" },
+    { key: "subtitle", label: "Subjudul" },
+    { key: "ctaPrimary", label: "Tombol utama" },
+    { key: "ctaSecondary", label: "Tombol kedua" },
+  ],
+  footer: [
+    { key: "brand", label: "Nama brand" },
+    { key: "links", label: "Tautan", tooltip: "Pisahkan dengan koma" },
+    { key: "copyright", label: "Copyright" },
+  ],
+  stats: [
+    { key: "title", label: "Judul" },
+    { key: "items", label: "Statistik", tooltip: "Satu per baris: Angka | Label", area: 3 },
+  ],
+};
+
+export function hasWidgetFields(unitId) {
+  return !!WIDGET_FIELDS[unitId];
+}
+
+/** Field yang dipakai list-like (`format`/`parse`) disimpan mentah selama diketik. */
+function ListTextValue({ field, value, onCommit }) {
+  const [draft, setDraft] = useState(null);
+  const text = draft ?? field.format(value);
+  const handle = (next) => {
+    setDraft(next);
+    onCommit(field.parse(next));
+  };
+  return field.area ? (
+    <AreaValue
+      value={text}
+      rows={field.area}
+      placeholder={field.placeholder}
+      onChange={handle}
+    />
+  ) : (
+    <Box flex="1" minW="0" onBlur={() => setDraft(null)}>
+      <TextValue value={text} placeholder={field.placeholder} onChange={handle} />
+    </Box>
+  );
+}
+
 export function WidgetFields({ unitId, widget, onChange }) {
+  const fields = WIDGET_FIELDS[unitId];
+  if (!fields) return null;
   const value = widget ?? {};
+  const defaults = WIDGET_DEFAULTS[unitId] ?? {};
   const set = (patch) => onChange({ ...value, ...patch });
 
-  const textField = (fieldKey, fieldLabel, placeholder) => (
-    <Field.Root key={fieldKey}>
-      <Field.Label>{fieldLabel}</Field.Label>
-      <Input
-        size="sm"
-        value={value[fieldKey] ?? ""}
-        placeholder={placeholder}
-        onChange={(event) => set({ [fieldKey]: event.target.value })}
-      />
-    </Field.Root>
-  );
+  return fields.map((field) => {
+    const current = value[field.key];
+    const fallback = defaults[field.key];
+    const modified =
+      fallback !== undefined && JSON.stringify(current ?? null) !== JSON.stringify(fallback);
+    const reset = () => set({ [field.key]: fallback });
 
-  const enumField = (fieldKey, fieldLabel, options) => (
-    <Field.Root key={fieldKey}>
-      <Field.Label>{fieldLabel}</Field.Label>
-      <select
-        value={value[fieldKey] ?? options[0]}
-        onChange={(event) => set({ [fieldKey]: event.target.value })}
-        style={{
-          fontSize: 13,
-          padding: "6px 8px",
-          borderRadius: 6,
-          border: "1px solid #cbd5e1",
-          background: "white",
-          width: "100%",
-        }}
+    let control;
+    if (field.options) {
+      control = (
+        <EnumValue
+          value={current ?? field.options[0]}
+          options={field.options}
+          onChange={(next) => set({ [field.key]: next })}
+        />
+      );
+    } else if (field.bool) {
+      control = <BoolValue value={!!current} onChange={(next) => set({ [field.key]: next })} />;
+    } else if (field.number) {
+      control = (
+        <NumberValue
+          value={Number(current ?? fallback ?? 0)}
+          min={field.number.min}
+          max={field.number.max}
+          onChange={(next) => set({ [field.key]: next })}
+        />
+      );
+    } else if (field.parse) {
+      control = (
+        <ListTextValue
+          key={field.key}
+          field={field}
+          value={current}
+          onCommit={(next) => set({ [field.key]: next })}
+        />
+      );
+    } else if (field.area) {
+      control = (
+        <AreaValue
+          value={current ?? ""}
+          rows={field.area}
+          placeholder={field.placeholder}
+          onChange={(next) => set({ [field.key]: next })}
+        />
+      );
+    } else {
+      control = (
+        <TextValue
+          value={current ?? ""}
+          placeholder={field.placeholder}
+          onChange={(next) => set({ [field.key]: next })}
+        />
+      );
+    }
+
+    return (
+      <PropRow
+        key={field.key}
+        label={field.label}
+        tooltip={field.tooltip}
+        modified={modified}
+        onReset={reset}
       >
-        {options.map((opt) => (
-          <option key={String(opt)} value={String(opt)}>
-            {String(opt)}
-          </option>
-        ))}
-      </select>
-    </Field.Root>
-  );
-
-  const boolField = (fieldKey, fieldLabel) => (
-    <label
-      key={fieldKey}
-      style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}
-    >
-      <input
-        type="checkbox"
-        checked={!!value[fieldKey]}
-        onChange={(event) => set({ [fieldKey]: event.target.checked })}
-      />
-      {fieldLabel}
-    </label>
-  );
-
-  const areaField = (fieldKey, fieldLabel, placeholder, rows = 3) => (
-    <Field.Root key={fieldKey}>
-      <Field.Label>{fieldLabel}</Field.Label>
-      <textarea
-        rows={rows}
-        value={value[fieldKey] ?? ""}
-        placeholder={placeholder}
-        onChange={(event) => set({ [fieldKey]: event.target.value })}
-        style={{
-          fontSize: 13,
-          padding: "6px 8px",
-          borderRadius: 6,
-          border: "1px solid #cbd5e1",
-          background: "white",
-          width: "100%",
-          fontFamily: "inherit",
-        }}
-      />
-    </Field.Root>
-  );
-
-  switch (unitId) {
-    case "button":
-      return (
-        <>
-          {textField("text", "Tulisan button", "Klik saya")}
-          {enumField("color", "Warna", WIDGET_ENUMS.colors)}
-          {enumField("variant", "Gaya", WIDGET_ENUMS.buttonVariants)}
-          {enumField("size", "Ukuran", WIDGET_ENUMS.buttonSizes)}
-        </>
-      );
-    case "text":
-      return (
-        <>
-          {textField("text", "Isi teks", "Tulis sesuatu…")}
-          {enumField("size", "Ukuran huruf", WIDGET_ENUMS.textSizes)}
-          {enumField("align", "Rata", WIDGET_ENUMS.aligns)}
-          {boolField("bold", "Tebal (bold)")}
-        </>
-      );
-    case "header":
-      return (
-        <>
-          {textField("text", "Judul header", "Judul Aplikasi")}
-          {textField("subtitle", "Subjudul (opsional)", "")}
-        </>
-      );
-    case "heading":
-      return (
-        <>
-          {textField("text", "Isi judul", "Judul")}
-          {enumField("level", "Level", [1, 2, 3])}
-          {enumField("align", "Rata", WIDGET_ENUMS.aligns)}
-        </>
-      );
-    case "list":
-      return (
-        <>
-          <Field.Root>
-            <Field.Label>Item statis (satu baris satu item)</Field.Label>
-            <textarea
-              rows={3}
-              value={Array.isArray(value.items) ? value.items.join("\n") : ""}
-              placeholder={"Item 1\nItem 2"}
-              onChange={(event) =>
-                set({
-                  items: event.target.value
-                    .split("\n")
-                    .map((part) => part.trim())
-                    .filter(Boolean),
-                })
-              }
-              style={{
-                fontSize: 13,
-                padding: "6px 8px",
-                borderRadius: 6,
-                border: "1px solid #cbd5e1",
-                background: "white",
-                width: "100%",
-                fontFamily: "inherit",
-              }}
-            />
-          </Field.Root>
-          {textField("table", "Tabel data (ganti item statis)", "")}
-          {textField("field", "Field yang ditampilkan", "")}
-        </>
-      );
-    case "card":
-      return textField("title", "Judul kartu", "Kartu");
-    case "page":
-      return textField("text", "Nama halaman", "Halaman");
-    case "container":
-      return (
-        <>
-          {textField("text", "Keterangan", "Kontainer")}
-          {enumField("direction", "Layout", WIDGET_ENUMS.directions)}
-          {textField("columns", "Kolom grid", "2")}
-        </>
-      );
-    case "image":
-      return textField("alt", "Teks alt/caption", "");
-    case "text-input":
-      return (
-        <>
-          {textField("label", "Label input", "Nama")}
-          {textField("placeholder", "Placeholder", "Ketik di sini…")}
-        </>
-      );
-    case "select":
-      return (
-        <>
-          {textField("label", "Label", "Pilihan")}
-          <Field.Root>
-            <Field.Label>Opsi (pisahkan koma)</Field.Label>
-            <Input
-              size="sm"
-              value={Array.isArray(value.options) ? value.options.join(", ") : ""}
-              placeholder="Opsi 1, Opsi 2, Opsi 3"
-              onChange={(event) =>
-                set({
-                  options: event.target.value
-                    .split(",")
-                    .map((part) => part.trim())
-                    .filter(Boolean),
-                })
-              }
-            />
-          </Field.Root>
-        </>
-      );
-    case "table":
-      return (
-        <>
-          {textField("title", "Judul tabel", "Data")}
-          <Field.Root>
-            <Field.Label>Kolom (pisahkan koma)</Field.Label>
-            <Input
-              size="sm"
-              value={Array.isArray(value.columns) ? value.columns.join(", ") : ""}
-              placeholder="Nama, Nilai"
-              onChange={(event) =>
-                set({
-                  columns: event.target.value
-                    .split(",")
-                    .map((part) => part.trim())
-                    .filter(Boolean),
-                })
-              }
-            />
-          </Field.Root>
-          <Field.Root>
-            <Field.Label>Baris (satu baris per baris, sel pisah | )</Field.Label>
-            <textarea
-              rows={3}
-              value={
-                Array.isArray(value.rows)
-                  ? value.rows.map((row) => (row ?? []).join(" | ")).join("\n")
-                  : ""
-              }
-              placeholder={"Contoh A | 10\nContoh B | 20"}
-              onChange={(event) =>
-                set({
-                  rows: event.target.value
-                    .split("\n")
-                    .map((line) => line.split("|").map((cell) => cell.trim()))
-                    .filter((cells) => cells.some((cell) => cell !== "")),
-                })
-              }
-              style={{
-                fontSize: 13,
-                padding: "6px 8px",
-                borderRadius: 6,
-                border: "1px solid #cbd5e1",
-                background: "white",
-                width: "100%",
-                fontFamily: "inherit",
-              }}
-            />
-          </Field.Root>
-        </>
-      );
-    case "chart":
-      return (
-        <>
-          {textField("title", "Judul grafik", "Grafik")}
-          <Field.Root>
-            <Field.Label>Nilai (pisahkan koma)</Field.Label>
-            <Input
-              size="sm"
-              value={Array.isArray(value.values) ? value.values.join(", ") : ""}
-              placeholder="35, 65, 45"
-              onChange={(event) =>
-                set({
-                  values: event.target.value
-                    .split(",")
-                    .map((part) => Number(part.trim()))
-                    .filter((num) => Number.isFinite(num)),
-                })
-              }
-            />
-          </Field.Root>
-        </>
-      );
-    case "form":
-      return (
-        <>
-          {textField("title", "Judul form", "Formulir")}
-          {textField("submitText", "Tulisan tombol", "Kirim")}
-        </>
-      );
-    case "hero":
-      return (
-        <>
-          {textField("eyebrow", "Label kecil", "Format 01 — Landing Page")}
-          {textField("title", "Judul besar", "Susun landing page di canvas")}
-          {areaField("subtitle", "Subjudul", "Tulis deskripsi singkat…")}
-          {textField("ctaPrimary", "Tombol utama", "Mulai gratis")}
-          {textField("ctaSecondary", "Tombol kedua", "Lihat contoh")}
-        </>
-      );
-    case "logo-strip":
-      return (
-        <>
-          {textField("title", "Judul strip", "DIPERCAYA TIM…")}
-          {textField("logos", "Logo (pisahkan koma)", "Acar, BacingDev, Kirana")}
-        </>
-      );
-    case "features-grid":
-      return (
-        <>
-          {textField("title", "Judul", "Semua yang perlu…")}
-          {textField("subtitle", "Subjudul", "")}
-          {areaField(
-            "items",
-            "Fitur (satu per baris: Judul | Deskripsi)",
-            "Drag & drop | Susun langsung di canvas",
-            4,
-          )}
-        </>
-      );
-    case "how-it-works":
-      return (
-        <>
-          {textField("title", "Judul", "Dari kanvas kosong…")}
-          {areaField(
-            "steps",
-            "Langkah (satu per baris: Judul | Deskripsi)",
-            "Drag komponen | Pilih lalu jatuhkan",
-            4,
-          )}
-        </>
-      );
-    case "testimonial":
-      return (
-        <>
-          {textField("title", "Judul", "Kata mereka…")}
-          {areaField(
-            "quotes",
-            "Testimoni (satu per baris: Kutipan | Nama | Peran)",
-            "Bagus sekali | Anisa | Designer",
-            4,
-          )}
-        </>
-      );
-    case "pricing":
-      return (
-        <>
-          {textField("title", "Judul", "Mulai gratis…")}
-          {textField("subtitle", "Subjudul", "")}
-          {areaField(
-            "plans",
-            "Paket (satu per baris: Nama | Harga | Periode | fitur a; fitur b, awali * untuk populer)",
-            "*Pro | Rp99rb | / bulan | Canvas tanpa batas; Support",
-            4,
-          )}
-        </>
-      );
-    case "cta-banner":
-      return (
-        <>
-          {textField("title", "Judul", "Siap susun landing pertamamu?")}
-          {textField("subtitle", "Subjudul", "")}
-          {textField("ctaPrimary", "Tombol utama", "Mulai di Editor")}
-          {textField("ctaSecondary", "Tombol kedua", "Baca Blog dulu")}
-        </>
-      );
-    case "footer":
-      return (
-        <>
-          {textField("brand", "Nama brand", "Workflow Studio")}
-          {textField("links", "Tautan (pisahkan koma)", "Editor, Blog, List, Canvas")}
-          {textField("copyright", "Copyright", "© 2026 — dibuat dari canvas")}
-        </>
-      );
-    case "stats":
-      return (
-        <>
-          {textField("title", "Judul", "Angka bicara")}
-          {areaField("items", "Statistik (satu per baris: Angka | Label)", "120+ | Canvas", 3)}
-        </>
-      );
-    default:
-      return null;
-  }
+        {control}
+      </PropRow>
+    );
+  });
 }
 
 /** Live preview kecil untuk dialog properti (selalu non-interaktif). */

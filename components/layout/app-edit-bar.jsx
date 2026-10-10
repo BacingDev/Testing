@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { Badge, Box, Button, HStack, Text } from "@chakra-ui/react";
 import { TbDeviceFloppy, TbEye, TbX } from "react-icons/tb";
 import { notify } from "@/lib/toast";
-import { saveAppDefinition } from "@/lib/apps-api";
 import { appPageToNodes, canvasToComponents } from "@/lib/app-canvas-bridge";
+import { saveEditingAppToServer } from "@/lib/app-edit-save";
 import { saveGraph as saveGraphLocal } from "@/lib/flow-save";
 import { AppRenderer } from "@/features/app-renderer/renderer";
 import { useFlowStore } from "@/stores/flow-store";
@@ -45,21 +45,7 @@ export default function AppEditBar() {
     if (saving) return;
     setSaving(true);
     try {
-      const skipped = persistCurrentPage();
-      const definition = useGraphStore.getState().editingApp.definition;
-      await saveAppDefinition(editingApp.appId, definition);
-      await saveGraphLocal();
-      notify({
-        title: "Tersimpan ke app",
-        description: skipped > 0 ? `${skipped} node non-app dilewati.` : undefined,
-        type: skipped > 0 ? "warning" : "success",
-      });
-    } catch (err) {
-      notify({
-        title: "Gagal menyimpan ke app",
-        description: err instanceof Error ? err.message : String(err),
-        type: "error",
-      });
+      await saveEditingAppToServer();
     } finally {
       setSaving(false);
     }

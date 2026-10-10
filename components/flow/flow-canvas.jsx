@@ -12,7 +12,8 @@ import {
   useUpdateNodeInternals,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TbArrowUp, TbSettings2, TbTrash } from "react-icons/tb";
+import { useRouter } from "next/navigation";
+import { TbArrowUp, TbDeviceFloppy, TbEye, TbSettings2, TbTrash, TbX } from "react-icons/tb";
 import { CanvasContextMenu } from "@/components/flow/canvas-context-menu";
 import { CanvasItemDialogs } from "@/components/flow/canvas-dialogs";
 import { CanvasMiniMap } from "@/components/flow/canvas-minimap";
@@ -36,6 +37,7 @@ import {
 import { UNIT_CATALOG_BY_ID } from "@/data/unit-catalog";
 import { sideAndPos } from "@/lib/geometry";
 import { notify } from "@/lib/toast";
+import { saveEditingAppToServer } from "@/lib/app-edit-save";
 import { useFlowStore } from "@/stores/flow-store";
 import { useGraphStore } from "@/stores/graph-store";
 import { portKey } from "@/stores/selection-key";
@@ -88,6 +90,7 @@ function isLockedPort(port) {
 }
 
 export function FlowCanvas() {
+  const router = useRouter();
   const nodes = useGraphStore((state) => state.nodes);
   const edges = useGraphStore((state) => state.edges);
   const setNodes = useGraphStore((state) => state.setNodes);
@@ -870,7 +873,11 @@ export function FlowCanvas() {
   const onPaneContextMenu = useCallback(
     (event) => {
       event.preventDefault();
-      handlePaneClick();
+      if (useGraphStore.getState().editingApp) {
+        setMenu({ kind: "pane", x: event.clientX, y: event.clientY });
+      } else {
+        handlePaneClick();
+      }
     },
     [handlePaneClick],
   );
@@ -917,6 +924,38 @@ export function FlowCanvas() {
 
   const menuItems = useMemo(() => {
     if (!menu) return [];
+    if (menu.kind === "pane") {
+      return [
+        {
+          key: "save-app",
+          label: "Simpan ke App",
+          icon: TbDeviceFloppy,
+          onSelect: () => {
+            setMenu(null);
+            saveEditingAppToServer();
+          },
+        },
+        {
+          key: "preview-app",
+          label: "Lihat hasil",
+          icon: TbEye,
+          onSelect: () => {
+            setMenu(null);
+            useFlowStore.getState().setPreviewOpen(true);
+          },
+        },
+        {
+          key: "exit-app",
+          label: "Keluar mode app",
+          icon: TbX,
+          onSelect: () => {
+            setMenu(null);
+            useGraphStore.getState().clearEditingApp();
+            router.push("/apps");
+          },
+        },
+      ];
+    }
     const target = targetOf(menu);
     // Node bersarang (di dalam page/container) bisa dikeluarkan lagi.
     const nested =
@@ -962,7 +1001,7 @@ export function FlowCanvas() {
         },
       },
     ];
-  }, [menu, nodes, showStatus, unnestNode]);
+  }, [menu, nodes, router, showStatus, unnestNode]);
 
   const portTypeLabel =
     portType === "virtual port"

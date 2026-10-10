@@ -62,6 +62,10 @@ export const WIDGET_DEFAULTS = {
   heading: { text: "Judul", level: 1, align: "left" },
   list: { items: ["Item 1", "Item 2", "Item 3"], table: "", field: "" },
   card: { title: "Kartu" },
+  divider: { thickness: 2, color: "gray.200" },
+  spacer: { height: 32 },
+  video: { url: "", title: "Video" },
+  navbar: { brand: "Brand", links: "Beranda, Harga, Kontak" },
   // --- section landing (di-render full-page oleh /landing/[id]) ---
   hero: {
     eyebrow: "Format 01 — Landing Page",
@@ -321,6 +325,52 @@ function WidgetBody({ unitId, widget, label, image }) {
             {widget?.title || label || "Card"}
           </Text>
         </Box>
+      );
+    case "divider":
+      return (
+        <Box
+          borderTopWidth={`${Math.max(1, Number(widget?.thickness) || 2)}px`}
+          borderTopStyle="solid"
+          borderTopColor={widget?.color || "#e2e8f0"}
+          width="100%"
+        />
+      );
+    case "spacer":
+      return (
+        <Box
+          borderWidth="1px"
+          borderStyle="dashed"
+          borderColor="border"
+          borderRadius="md"
+          width="100%"
+          textAlign="center"
+        >
+          <Text fontSize="9px" color="fg.muted">
+            {Math.max(0, Number(widget?.height) || 32)}px
+          </Text>
+        </Box>
+      );
+    case "video":
+      return (
+        <>
+          <Text fontSize="10px" fontWeight="semibold" noOfLines={1}>
+            ▶ {widget?.title || label || "Video"}
+          </Text>
+          <Text fontSize="9px" color="fg.muted" noOfLines={1}>
+            {widget?.url || "belum ada URL"}
+          </Text>
+        </>
+      );
+    case "navbar":
+      return (
+        <>
+          <Text fontSize="10px" fontWeight="bold" noOfLines={1}>
+            {widget?.brand || label || "Navbar"}
+          </Text>
+          <Text fontSize="9px" color="fg.muted" noOfLines={1}>
+            {widget?.links || ""}
+          </Text>
+        </>
       );
     case "table": {
       const columns =
@@ -594,6 +644,19 @@ const WIDGET_FIELDS = {
     { key: "field", label: "Field ditampilkan" },
   ],
   card: [{ key: "title", label: "Judul kartu", placeholder: "Kartu" }],
+  divider: [
+    { key: "thickness", label: "Tebal (px)", number: { min: 1, max: 12 } },
+    { key: "color", label: "Warna", placeholder: "gray.200" },
+  ],
+  spacer: [{ key: "height", label: "Tinggi (px)", number: { min: 0, max: 400 } }],
+  video: [
+    { key: "url", label: "URL embed", placeholder: "https://…" },
+    { key: "title", label: "Judul", placeholder: "Video" },
+  ],
+  navbar: [
+    { key: "brand", label: "Nama brand", placeholder: "Brand" },
+    { key: "links", label: "Tautan", tooltip: "Pisahkan dengan koma", placeholder: "Beranda, Harga, Kontak" },
+  ],
   page: [{ key: "text", label: "Nama halaman", placeholder: "Halaman" }],
   container: [
     { key: "text", label: "Keterangan", placeholder: "Kontainer" },
